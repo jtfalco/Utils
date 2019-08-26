@@ -44,7 +44,7 @@ namespace DieFaceDistributer
             TreeNode<DiceConstruct> possibleAnswer = new TreeNode<DiceConstruct>(DiceConstruct.ConstructWithNSidesOfXSymbol(1, 6, 6));
             for (int i = 0; i < numberOfSymbol; i++)
             {
-                possibleAnswer.Add(DiceConstruct.ConstructWithNSidesOfXSymbol(1, 1, 6));                
+                //possibleAnswer.Add(DiceConstruct.ConstructWithNSidesOfXSymbol(1, 1, 6));                
             }
             Tuple<TreeNode<DiceConstruct>, Decimal> entry = new Tuple<TreeNode<DiceConstruct>, decimal>(possibleAnswer, FigureScore(possibleAnswer));
             answer.Add(entry);
@@ -174,6 +174,11 @@ namespace DieFaceDistributer
 
             answer = answer.OrderBy(a => a.Item2).ToList();
             return answer;
+        }
+
+        static Decimal FigureScore(TreeNode<DiceConstruct> diceTree)
+        {
+            return 0.0m;
         }
 
         static void TestAll()
