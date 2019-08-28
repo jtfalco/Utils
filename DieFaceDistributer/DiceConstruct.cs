@@ -43,10 +43,14 @@ namespace DieFaceDistributer
             return SideSymbolIds[r.Next(0, NumberOfSides-1)];            
         }
 
+        public Decimal OddsOnSymbol(int symbol)
+        {
+            return (Decimal)(SideSymbolIds.Aggregate((total, aggregand) => total + (aggregand == symbol ? 1 : 0))) / (Decimal)NumberOfSides;
+        }
+
         public DiceConstruct Copy()
         {
-            DiceConstruct res = new DiceConstruct();
-            res.NumberOfSides = NumberOfSides;
+            DiceConstruct res = new DiceConstruct { NumberOfSides = SideSymbolIds.Length };            
             Array.Copy(SideSymbolIds, res.SideSymbolIds, NumberOfSides);
             return res;
         }
@@ -108,7 +112,7 @@ namespace DieFaceDistributer
             return construct;
         }
 
-        private static string[] endCaps = { "{", "}" };        //This should always have two elements, and neither, particularly not the second one, should start with a digit.
+        private static readonly string[] endCaps = { "{", "}" };        //This should always have two elements, and neither, particularly not the second one, should start with a digit.
         private static string separator = ",";
         public string Serialize()
         {
@@ -143,9 +147,8 @@ namespace DieFaceDistributer
             while(currentIndex < startOfEndIndex)
             {
                 nextIndex = input.IndexOfAny(anies, currentIndex);
-                string parseable = input.Substring(currentIndex, nextIndex - currentIndex);
-                int nextSymbolId = 0;
-                if(!int.TryParse(parseable, out nextSymbolId))
+                string parseable = input.Substring(currentIndex, nextIndex - currentIndex);                
+                if(!int.TryParse(parseable, out int nextSymbolId))
                 {
                     throw new ArgumentException("Couldn't read integer symbol id.");
                 }

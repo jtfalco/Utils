@@ -9,8 +9,8 @@ namespace DieFaceDistributer
     {
         static void Main(string[] args)
         {
-            int numberOfSymbol = 0, maxNumberOfDice = int.MaxValue, minNumberOfDice = 1;
-            if(args.Length > 0 && int.TryParse(args[0], out numberOfSymbol))
+            int maxNumberOfDice = int.MaxValue, minNumberOfDice = 1;
+            if (args.Length > 0 && int.TryParse(args[0], out int numberOfSymbol))
             {
                 if(args.Length > 1 && int.TryParse(args[1], out minNumberOfDice))
                 {
@@ -33,23 +33,36 @@ namespace DieFaceDistributer
             TestAll();
         }
 
-        static List<Tuple<TreeNode<DiceConstruct>,Decimal>> FigureWithOneSymbol(int numberOfSymbol, int targetNumber, int sidesPerDie = 6, int maxNumberOfDice = int.MaxValue, int minNumberOfDice = 1)
+        static void FigureWithOneSymbol(int numberOfSymbol, int targetNumber, int sidesPerDie = 6, int maxNumberOfDice = int.MaxValue, int minNumberOfDice = 1)
         {
-            List<Tuple<TreeNode<DiceConstruct>, Decimal>> answer = new List<Tuple<TreeNode<DiceConstruct>, Decimal>>();
-            
-            int actualMax = Math.Min(numberOfSymbol, maxNumberOfDice);
-            int actualMin = Math.Max((int)Math.Ceiling((decimal)numberOfSymbol / (decimal)sidesPerDie), minNumberOfDice);
-            if (actualMax < actualMin) throw new ArgumentException("Cannot mathematically figure this one out.  Actual maximum possible dice: " 
-                + actualMax.ToString() + ". Actual minumum possible dice: " + actualMin.ToString() + ".");
-            TreeNode<DiceConstruct> possibleAnswer = new TreeNode<DiceConstruct>(DiceConstruct.ConstructWithNSidesOfXSymbol(1, 6, 6));
-            for (int i = 0; i < numberOfSymbol; i++)
-            {
-                //possibleAnswer.Add(DiceConstruct.ConstructWithNSidesOfXSymbol(1, 1, 6));                
-            }
-            Tuple<TreeNode<DiceConstruct>, Decimal> entry = new Tuple<TreeNode<DiceConstruct>, decimal>(possibleAnswer, FigureScore(possibleAnswer));
-            answer.Add(entry);
+            TreeNode<DiceConstruct> initialTree = ConstructTreeOfDice(sidesPerDie, sidesPerDie, numberOfSymbol);
+            TreeNode<Tuple<DiceConstruct, List<decimal>>> scoreOddsTree = BuildScoreOddsTree(initialTree, scoreOddsTree, new List<decimal>());
+            List<Tuple<DiceConstruct, List<decimal>>> scoreOddsTreeChildren = scoreOddsTree.DeepestChildren().ToList();
+        }
 
-            
+        static TreeNode<Tuple<DiceConstruct, List<decimal>>> BuildScoreOddsTree(TreeNode<DiceConstruct> diceTree, TreeNode<Tuple<DiceConstruct, List<decimal>>> scoreOdds, List<decimal> currentOdds)
+        {
+            Tuple<DiceConstruct, List<decimal>> scoreOddsUpToThisDie = new Tuple<DiceConstruct, List<decimal>>(diceTree.Value, FactorFromCurrentOdds(currentOdds, diceTree.Value.OddsOnSymbol(1)));
+            return new TreeNode<Tuple<DiceConstruct, List<decimal>>>(scoreOddsUpToThisDie);
+        }    
+
+        static List<decimal> FactorFromCurrentOdds(List<decimal> currentOdds, decimal oddsOfNewSuccess)
+        {
+            List<decimal> answer = new List<decimal>();
+            for(int i = 0; i < currentOdds.Count; i++)
+            {
+                if(i == 0) {
+                    answer.Add(currentOdds[0] * (1.0m - oddsOfNewSuccess));
+                } else
+                {
+                    answer.Add(currentOdds[i - 1] * (oddsOfNewSuccess) + currentOdds[i] * (1.0m - oddsOfNewSuccess));
+                }
+            }
+            answer.Add(currentOdds[currentOdds.Count - 1] * oddsOfNewSuccess);
+            return answer;
+        }
+
+
             /* First, pack them in
              * A: Then, until your left-most die is "fully expanded",
              * Take your right-most, not-fully-expanded die, and,
@@ -171,14 +184,47 @@ namespace DieFaceDistributer
              */
 
 
-
-            answer = answer.OrderBy(a => a.Item2).ToList();
-            return answer;
+        static List<Decimal> ListOfOdds(TreeNode<DiceConstruct> diceTree, int numSuccessesNeeded, int numSuccessesReachable)
+        {
+            if (diceTree == null) return new List<Decimal>();
+            if (numSuccessesReachable < numSuccessesNeeded)
+            {
+                Decimal scorePiece = diceTree.Value.OddsOnSymbol(1);
+                return new List<decimal>().Append(scorePiece).Concat(ListOfOdds());
+            }
+            //diceTree.Select(a => a.OddsOnSymbol(1)).Aggregate
+            System.Linq.Enumerable.Aggregate<Decimal>(System.Linq.Enumerable.Select<DiceConstruct,Decimal>(diceTree, a => a.OddsOnSymbol(1)),(a,b) => 1);
+            //diceTree.Aggregate()
         }
 
-        static Decimal FigureScore(TreeNode<DiceConstruct> diceTree)
+        static TreeNode<DiceConstruct> ConstructTreeOfDice(int numberSidesPerDie, int maxNumberSymbolsPerDie, int numberSymbolsToConsume)
         {
-            return 0.0m;
+            int maxOnThisDie = Math.Min(numberSidesPerDie, maxNumberSymbolsPerDie);
+            if (maxOnThisDie < 1 || numberSymbolsToConsume < 1)
+            {
+                return null;
+            }
+            DiceConstruct newDie;
+            if (numberSymbolsToConsume > maxOnThisDie)
+            {
+                int newNumberSymbolsToConsume = numberSymbolsToConsume - maxOnThisDie;
+                newDie = DiceConstruct.ConstructWithNSidesOfXSymbol(1, maxOnThisDie, numberSidesPerDie);
+                TreeNode<DiceConstruct> node = new TreeNode<DiceConstruct>(newDie);
+                List<TreeNode<DiceConstruct>> children = new List<TreeNode<DiceConstruct>>();
+                while (newNumberSymbolsToConsume > 0)
+                {
+                    TreeNode<DiceConstruct> child = ConstructTreeOfDice(numberSidesPerDie, maxNumberSymbolsPerDie, newNumberSymbolsToConsume);
+                    if(child != null)
+                    {
+                        children.Add(child);
+                    }
+                    newNumberSymbolsToConsume--;
+                }                
+                node.AddChildren(children);
+                return node;
+            }
+            newDie = DiceConstruct.ConstructWithNSidesOfXSymbol(1, numberSymbolsToConsume, numberSidesPerDie);
+            return new TreeNode<DiceConstruct>(newDie);
         }
 
         static void TestAll()

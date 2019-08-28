@@ -8,7 +8,7 @@ using System.Text;
 namespace DieFaceDistributer
 {
 
-    public class TreeNode<T> : IEnumerable // From https://stackoverflow.com/a/10442244 contributed by Ronnie Overby, edited by me
+    public class TreeNode<T> : IEnumerable<T> // From https://stackoverflow.com/a/10442244 contributed by Ronnie Overby, edited by me
     {
         private readonly T _value;
         private readonly List<TreeNode<T>> _children = new List<TreeNode<T>>();
@@ -39,6 +39,13 @@ namespace DieFaceDistributer
             return node;
         }
 
+        public TreeNode<T> AddChild(TreeNode<T> value)
+        {
+            value.Parent = this;
+            _children.Add(value);
+            return value;
+        }
+
         public IEnumerable<TreeNode<T>> AddChildren(params T[] values)
         {
             return values.Select(AddChild);
@@ -49,9 +56,27 @@ namespace DieFaceDistributer
             return values.Select(AddChild);
         }
 
+        public IEnumerable<TreeNode<T>> AddChildren(IEnumerable<TreeNode<T>> values)
+        {
+            return values.Select(AddChild);
+        }
+
         public bool RemoveChild(TreeNode<T> node)
         {
             return _children.Remove(node);
+        }
+
+        public IEnumerable<T> DeepestChildren()
+        {
+            if (_children.Count == 0) yield return Value;
+            foreach (TreeNode<T> child in _children)
+            {
+                foreach(T descendant in child.DeepestChildren())
+                {
+                    yield return descendant;
+                }
+            }
+            yield break;
         }
 
         public void Traverse(Action<T> action)
@@ -60,8 +85,27 @@ namespace DieFaceDistributer
             foreach (var child in _children)
                 child.Traverse(action);
         }
-
+        /*
         public IEnumerator GetEnumerator()
+        {
+            yield return Value;
+            foreach (TreeNode<T> child in _children)
+            {
+                yield return child.Value;
+            }
+        }
+        */
+        
+        public IEnumerator<T> GetEnumerator()
+        {
+            yield return Value;
+            foreach (TreeNode<T> child in _children)
+            {
+                yield return child.Value;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
         {
             yield return Value;
             foreach (TreeNode<T> child in _children)
@@ -73,6 +117,6 @@ namespace DieFaceDistributer
         public IEnumerable<T> Flatten()
         {
             return new[] { Value }.Concat(_children.SelectMany(x => x.Flatten()));
-        }
+        }        
     }
 }
