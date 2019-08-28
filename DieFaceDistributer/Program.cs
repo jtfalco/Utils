@@ -36,7 +36,7 @@ namespace DieFaceDistributer
         static void FigureWithOneSymbol(int numberOfSymbol, int targetNumber, int sidesPerDie = 6, int maxNumberOfDice = int.MaxValue, int minNumberOfDice = 1)
         {
             TreeNode<DiceConstruct> initialTree = ConstructTreeOfDice(sidesPerDie, sidesPerDie, numberOfSymbol);
-            TreeNode<Tuple<DiceConstruct, List<decimal>>> scoreOddsTree = BuildScoreOddsTree(initialTree, scoreOddsTree, new List<decimal>());
+            TreeNode<Tuple<DiceConstruct, List<decimal>>> scoreOddsTree = BuildScoreOddsTree(initialTree, new TreeNode<Tuple<DiceConstruct, List<decimal>>>(new Tuple<DiceConstruct, List<decimal>>()), new List<decimal>());
             List<Tuple<DiceConstruct, List<decimal>>> scoreOddsTreeChildren = scoreOddsTree.DeepestChildren().ToList();
         }
 
@@ -184,17 +184,45 @@ namespace DieFaceDistributer
              */
 
 
-        static List<Decimal> ListOfOdds(TreeNode<DiceConstruct> diceTree, int numSuccessesNeeded, int numSuccessesReachable)
+        static List<Tuple<string, decimal>> ListOfOdds(TreeNode<Tuple<DiceConstruct, List<decimal>>> diceTree, int numSuccessesNeeded, int numSuccessesReachable)
         {
-            if (diceTree == null) return new List<Decimal>();
+            List<List<Tuple<DiceConstruct, List<decimal>>>> answerGraph = new List<List<Tuple<DiceConstruct, List<decimal>>>>();
+            List<Tuple<string, decimal>> answers = new List<Tuple<string, decimal>>();
+            foreach(TreeNode<Tuple<DiceConstruct, List<decimal>>> farthestDescendant in diceTree.DeepestChildren())
+            {
+                answerGraph.Add(new List<Tuple<DiceConstruct, List<decimal>>>());
+                answerGraph[answerGraph.Count - 1].Add(new Tuple<DiceConstruct, List<decimal>>(farthestDescendant.Value.Item1, farthestDescendant.Value.Item2));                
+                TreeNode<Tuple<DiceConstruct, List<decimal>>> descendant = null;
+                if(farthestDescendant.Parent != null) descendant = farthestDescendant.Parent;
+                while(descendant != null)
+                {
+                    answerGraph[answerGraph.Count - 1].Add(new Tuple<DiceConstruct, List<decimal>>(descendant.Value.Item1, descendant.Value.Item2));
+                    descendant = descendant.Parent;
+                }
+                answerGraph[answerGraph.Count - 1].Reverse();
+            }
+            int[] winningSides = { 1 };
+            foreach(List<Tuple<DiceConstruct, List<decimal>>> answerRow in answerGraph)
+            {
+                string dieIndicator = answerRow.Aggregate("", (a, b) => a + "," + b.Item1.NumberOfWinningSides(winningSides));
+                decimal oddsForThisSelectionOfDice = 0.0m;
+                for (int i = numSuccessesNeeded; i < answerRow[answerRow.Count - 1].Item2.Count; i++)
+                {
+                    oddsForThisSelectionOfDice += answerRow[answerRow.Count - 1].Item2[i];
+                }
+                answers.Add(new Tuple<string, decimal>(dieIndicator, oddsForThisSelectionOfDice));
+            }
+            return answers;
+            /*if (diceTree == null) return new List<decimal>();
             if (numSuccessesReachable < numSuccessesNeeded)
             {
                 Decimal scorePiece = diceTree.Value.OddsOnSymbol(1);
-                return new List<decimal>().Append(scorePiece).Concat(ListOfOdds());
+                return new List<decimal>().Append(scorePiece).Concat(ListOfOdds(new TreeNode<DiceConstruct>(new DiceConstruct()) , numSuccessesNeeded,numSuccessesReachable + 1)).ToList();
             }
             //diceTree.Select(a => a.OddsOnSymbol(1)).Aggregate
             System.Linq.Enumerable.Aggregate<Decimal>(System.Linq.Enumerable.Select<DiceConstruct,Decimal>(diceTree, a => a.OddsOnSymbol(1)),(a,b) => 1);
             //diceTree.Aggregate()
+            return new List<decimal>();*/
         }
 
         static TreeNode<DiceConstruct> ConstructTreeOfDice(int numberSidesPerDie, int maxNumberSymbolsPerDie, int numberSymbolsToConsume)
