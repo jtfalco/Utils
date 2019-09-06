@@ -21,7 +21,7 @@ namespace DieFaceDistributer
         }
         public int NumberOfWinningSides(int[] winningSides)
         {
-            return SideSymbolIds.Select(a => winningSides.Contains(a)).Count();
+            return SideSymbolIds.Count(a => winningSides.Contains(a));            
         }
         public int[] SideSymbolIds { get; set; }
         public bool IsEmpty()
