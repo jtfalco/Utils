@@ -88,6 +88,7 @@ namespace DieFaceDistributer
             System.Linq.Enumerable.Aggregate<decimal>(System.Linq.Enumerable.Select<DiceConstruct,decimal>(diceTree, a => a.OddsOnSymbol(1)),(a,b) => 1);
             return new List<decimal>();
             //diceTree.Aggregate()
+            return new List<decimal>();*/
         }
 
         //                                                      3                       1                           3

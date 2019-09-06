@@ -66,12 +66,12 @@ namespace DieFaceDistributer
             return _children.Remove(node);
         }
 
-        public IEnumerable<T> DeepestChildren()
+        public IEnumerable<TreeNode<T>> DeepestChildren()
         {
-            if (_children.Count == 0) yield return Value;
+            if (_children.Count == 0) yield return this;
             foreach (TreeNode<T> child in _children)
             {
-                foreach(T descendant in child.DeepestChildren())
+                foreach(TreeNode<T> descendant in child.DeepestChildren())
                 {
                     yield return descendant;
                 }
