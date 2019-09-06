@@ -48,6 +48,11 @@ namespace DieFaceDistributer
             return (Decimal)(SideSymbolIds.Aggregate((total, aggregand) => total + (aggregand == symbol ? 1 : 0))) / (Decimal)NumberOfSides;
         }
 
+        public string PercentThatAreSymbol(int symbol)
+        {
+            return OddsOnSymbol(symbol).ToString("P");
+        }
+
         public DiceConstruct Copy()
         {
             DiceConstruct res = new DiceConstruct { NumberOfSides = SideSymbolIds.Length };            
