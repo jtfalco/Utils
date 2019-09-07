@@ -8,56 +8,79 @@ namespace DieFaceDistributer
     class Program
     {
         static void Main(string[] args)
-        {            
+        { /*Args: numberOfSymbol: Number of the Winning Symbol that we have to distribute among our dice.            
+            targetNumber: Target Number of Successes to Roll amongst the dice we create
+            numSidesPerDie: Number of Sides the dice we create will have.
+            */
             if (args.Length > 0 && int.TryParse(args[0], out int numberOfSymbol))
             {
-                if(args.Length > 1 && int.TryParse(args[1], out int minNumberOfDice))
+                if (args.Length > 1 && int.TryParse(args[1], out int targetNumber))
                 {
-                    if (args.Length > 2 && int.TryParse(args[2], out int maxNumberOfDice))
+                    if (args.Length > 2 && int.TryParse(args[2], out int numSidesPerDie))
                     {
-                        
-                        if(args.Length > 3 && int.TryParse(args[3], out int targetNumber))
-                        {
-                            if (args.Length > 4 && int.TryParse(args[4], out int numSidesPerDie))
-                            {
-                                FigureWithOneSymbol(numberOfSymbol, targetNumber, numSidesPerDie, maxNumberOfDice, minNumberOfDice);
-                            }
-                            else
-                            {
-                                FigureWithOneSymbol(numberOfSymbol, targetNumber, 6, maxNumberOfDice, minNumberOfDice);
-                            }
-                        } else
-                        {
-                            FigureWithOneSymbol(numberOfSymbol, 1, 6, maxNumberOfDice, minNumberOfDice);
-                        }
-                    } else
-                    {
-                        FigureWithOneSymbol(numberOfSymbol, 1, 6, int.MaxValue, minNumberOfDice);
+                        ShowNumbersOfWinningSymbolsAndOdds(numberOfSymbol, targetNumber, numSidesPerDie);
                     }
-                } else
-                {
-                    FigureWithOneSymbol(numberOfSymbol, 1, 6, int.MaxValue, 1);
+                    else
+                    {
+                        ShowNumbersOfWinningSymbolsAndOdds(numberOfSymbol, 1, 6);
+                    }
                 }
-            } else
-            {
-                FigureWithOneSymbol(1, 1, 6, int.MaxValue, 1);
+                else
+                {
+                    ShowNumbersOfWinningSymbolsAndOdds(numberOfSymbol, 1, 6);
+                }
             }
-            
-            
+            else
+            {
+                ShowNumbersOfWinningSymbolsAndOdds(1, 1, 6);
+            }
+            Console.Write("Please press Enter...");
+            System.IO.TextReader reader = Console.In;            
+            int characterRead = reader.Read();
+            while (characterRead != 13) {
+                characterRead = reader.Read();
+            }
             //TestAll();
         }
-
-        static void FigureWithOneSymbol(int numberOfSymbol, int targetNumber, int sidesPerDie = 6, int maxNumberOfDice = int.MaxValue, int minNumberOfDice = 1)
+        
+        static void ShowNumbersOfWinningSymbolsAndOdds(int numberOfSymbol, int targetNumber, int sidesPerDie = 6)
         {
-            TreeNode<DiceConstruct> initialTree = ConstructTreeOfDice(sidesPerDie, sidesPerDie, numberOfSymbol);
-            TreeNode<Tuple<DiceConstruct, List<decimal>>> scoreOddsTree = BuildScoreOddsTree(initialTree, new List<decimal>());
+            List<TreeNode<DiceConstruct>> diceForest = new List<TreeNode<DiceConstruct>>();
+            IEnumerable<TreeNode<Tuple<DiceConstruct, string, List<decimal>>>> scoreOddsForest = new List<TreeNode<Tuple<DiceConstruct, string, List<decimal>>>>();
+            int newMaxNumberSymbolsPerDie = Math.Min(sidesPerDie, numberOfSymbol);
+            while (newMaxNumberSymbolsPerDie > 0)
+            {
+                TreeNode<DiceConstruct> tree = ConstructTreeOfDice(sidesPerDie, newMaxNumberSymbolsPerDie, numberOfSymbol);
+                if (tree != null)
+                {
+                    diceForest.Add(tree);
+                    TreeNode<Tuple<DiceConstruct, string, List<decimal>>> scoreOddsTree = BuildOddsListingAndDiceDescription(tree, string.Empty, new List<decimal>());
+                    IEnumerable<TreeNode<Tuple<DiceConstruct, string, List<decimal>>>> scoreOddsTreeChildren = scoreOddsTree.DeepestChildren();
+                    scoreOddsForest = scoreOddsForest.Concat(scoreOddsTreeChildren);
+                }
+                newMaxNumberSymbolsPerDie--;
+            }
+
+            scoreOddsForest = scoreOddsForest.OrderByDescending(a => a.Value.Item3.Skip(targetNumber).Aggregate(0.0m, (b, c) => b + c));
+            foreach (TreeNode<Tuple<DiceConstruct, string, List<decimal>>> scoreOddsTreeChild in scoreOddsForest)
+            {
+                int[] winners = new int[] { 1 };
+                string target = scoreOddsTreeChild.Value.Item2 + ":" + scoreOddsTreeChild.Value.Item3.Skip(targetNumber).Aggregate(0.0m, (a, b) => a + b).ToString("P");                
+                System.Console.WriteLine(target);
+            }
+        }
+
+        static void ShowNumbersOfWinningSymbolsAndOddsTheOldWay(int numberOfSymbol, int targetNumber, int sidesPerDie = 6)
+        {
+            TreeNode<DiceConstruct> initialTree = StartConstructingTreeOfDice(sidesPerDie, Math.Min(sidesPerDie, numberOfSymbol), numberOfSymbol);
+            TreeNode<Tuple<DiceConstruct, List<decimal>>> scoreOddsTree = BuildOddsListingAndDiceDescriptionTheOldWay(initialTree, new List<decimal>());
             List<TreeNode<Tuple<DiceConstruct, List<decimal>>>> scoreOddsTreeChildren = scoreOddsTree.DeepestChildren().ToList();
-            foreach(TreeNode<Tuple<DiceConstruct, List<decimal>>> scoreOddsTreeChild in scoreOddsTreeChildren)
+            foreach (TreeNode<Tuple<DiceConstruct, List<decimal>>> scoreOddsTreeChild in scoreOddsTreeChildren)
             {
                 int[] winners = new int[] { 1 };
                 TreeNode<Tuple<DiceConstruct, List<decimal>>> aParent = scoreOddsTreeChild.Parent;
                 string target = scoreOddsTreeChild.Value.Item1.NumberOfWinningSides(winners).ToString();
-                while(aParent != null)
+                while (aParent != null)
                 {
                     target += "," + aParent.Value.Item1.NumberOfWinningSides(winners).ToString();
                     aParent = aParent.Parent;
@@ -67,21 +90,36 @@ namespace DieFaceDistributer
             }
         }
 
-        static TreeNode<Tuple<DiceConstruct, List<decimal>>> BuildScoreOddsTree(TreeNode<DiceConstruct> diceTree, List<decimal> currentOdds)
+        private static TreeNode<Tuple<DiceConstruct, string, List<decimal>>> BuildOddsListingAndDiceDescription(TreeNode<DiceConstruct> diceTree, string parentString, List<decimal> currentOdds)
         {
-            Tuple<DiceConstruct, List<decimal>> scoreOddsUpToThisDie = new Tuple<DiceConstruct, List<decimal>>(diceTree.Value, FactorFromCurrentOdds(currentOdds, diceTree.Value.OddsOnSymbol(1)));
-            TreeNode<Tuple<DiceConstruct, List<decimal>>> answer = new TreeNode<Tuple<DiceConstruct, List<decimal>>>(scoreOddsUpToThisDie);
-            //if (scoreOdds != null) answer.Parent = scoreOdds;
+            int[] winners = new int[]{ 1 };
+            Tuple<DiceConstruct, string, List<decimal>> scoreOddsUpToThisDie = new Tuple<DiceConstruct, string, List<decimal>>(diceTree.Value, (parentString == string.Empty ? parentString : parentString + ",") + diceTree.Value.NumberOfWinningSides(winners), MarkovMyChainButOnlyForSuccesses(currentOdds, diceTree.Value.OddsOnSymbol(1)));
+            TreeNode<Tuple<DiceConstruct, string, List<decimal>>> answer = new TreeNode<Tuple<DiceConstruct, string, List<decimal>>>(scoreOddsUpToThisDie);
             if (diceTree.Children.Count == 0)
             {
                 return answer;
             }
-            foreach(TreeNode<DiceConstruct> dieNode in diceTree.Children)
+            foreach (TreeNode<DiceConstruct> dieNode in diceTree.Children)
             {
-                answer.AddChild(BuildScoreOddsTree(dieNode, scoreOddsUpToThisDie.Item2));
+                answer.AddChild(BuildOddsListingAndDiceDescription(dieNode, scoreOddsUpToThisDie.Item2, scoreOddsUpToThisDie.Item3));
             }
             return answer;
-        }    
+        }
+
+        static TreeNode<Tuple<DiceConstruct, List<decimal>>> BuildOddsListingAndDiceDescriptionTheOldWay(TreeNode<DiceConstruct> diceTree, List<decimal> currentOdds)
+        {
+            Tuple<DiceConstruct, List<decimal>> scoreOddsUpToThisDie = new Tuple<DiceConstruct, List<decimal>>(diceTree.Value, MarkovMyChainButOnlyForSuccesses(currentOdds, diceTree.Value.OddsOnSymbol(1)));
+            TreeNode<Tuple<DiceConstruct, List<decimal>>> answer = new TreeNode<Tuple<DiceConstruct, List<decimal>>>(scoreOddsUpToThisDie);
+            if (diceTree.Children.Count == 0)
+            {
+                return answer;
+            }
+            foreach (TreeNode<DiceConstruct> dieNode in diceTree.Children)
+            {
+                answer.AddChild(BuildOddsListingAndDiceDescriptionTheOldWay(dieNode, scoreOddsUpToThisDie.Item2));
+            }
+            return answer;
+        }
 
         /// <summary>
         /// Takes a list containing numbers indicating the odds of having hit {index} number of successes and the odds of getting a new success, and returns similar, but with the new odds factored in.
@@ -89,7 +127,7 @@ namespace DieFaceDistributer
         /// <param name="currentOdds">Imagine this is [Odds of 0 successes, odds of 1 success, odds of 2 successes,...]</param>
         /// <param name="oddsOfNewSuccess">The odds of the current die you're (about to roll/rolling) being a success.  Should be in the range [0..1]</param>
         /// <returns></returns>
-        static List<decimal> FactorFromCurrentOdds(List<decimal> currentOdds, decimal oddsOfNewSuccess)
+        static List<decimal> MarkovMyChainButOnlyForSuccesses(List<decimal> currentOdds, decimal oddsOfNewSuccess)
         {
             List<decimal> answer = new List<decimal>();
             if (currentOdds.Count == 0)
@@ -112,54 +150,45 @@ namespace DieFaceDistributer
             return answer;
         }
 
-
-            
-
-
-        static List<decimal> ListOfOdds(TreeNode<DiceConstruct> diceTree, int numSuccessesNeeded, int numSuccessesReachable)
+        static TreeNode<DiceConstruct> StartConstructingTreeOfDice(int numberSidesPerDie, int maxNumberSymbolsPerDie, int totalNumberSymbolsToConsume)
         {
-            if (diceTree == null) return new List<decimal>();
-            if (numSuccessesReachable < numSuccessesNeeded)
+            TreeNode<DiceConstruct> node = new TreeNode<DiceConstruct>(new DiceConstruct { NumberOfSides = numberSidesPerDie });
+            int newMaxNumberSymbolsPerDie = Math.Min(numberSidesPerDie, maxNumberSymbolsPerDie);
+            while(newMaxNumberSymbolsPerDie > 0)
             {
-                decimal scorePiece = diceTree.Value.OddsOnSymbol(1);
-                return new List<decimal>().Append(scorePiece).Concat(new List<decimal>()).ToList();
+                TreeNode<DiceConstruct> child = ConstructTreeOfDice(numberSidesPerDie, newMaxNumberSymbolsPerDie, totalNumberSymbolsToConsume);
+                if (child != null)
+                {
+                    node.AddChild(child);
+                }
+                newMaxNumberSymbolsPerDie--;
             }
-            //diceTree.Select(a => a.OddsOnSymbol(1)).Aggregate
-            System.Linq.Enumerable.Aggregate<decimal>(System.Linq.Enumerable.Select<DiceConstruct,decimal>(diceTree, a => a.OddsOnSymbol(1)),(a,b) => 1);
-            return new List<decimal>();
-            //diceTree.Aggregate()
-            //return new List<decimal>();*/
+            return node;
         }
 
-        //                                                      3                       1                           3
         static TreeNode<DiceConstruct> ConstructTreeOfDice(int numberSidesPerDie, int maxNumberSymbolsPerDie, int totalNumberSymbolsToConsume)
         {
             int maxOnThisDie = Math.Min(numberSidesPerDie, maxNumberSymbolsPerDie),
-                newMaxNumberSymbolsPerDie = maxNumberSymbolsPerDie,
-                currentNumberSymbolsToConsume = Math.Min(totalNumberSymbolsToConsume, maxOnThisDie);
+                currentNumberSymbolsToConsume = Math.Min(totalNumberSymbolsToConsume, maxOnThisDie),
+            newMaxNumberSymbolsPerDie = Math.Min(maxNumberSymbolsPerDie,currentNumberSymbolsToConsume);                
             if (maxOnThisDie < 1 || totalNumberSymbolsToConsume < 1)
             {
                 return null;
             }
             DiceConstruct newDie = DiceConstruct.ConstructWithNSidesOfXSymbol(1, currentNumberSymbolsToConsume, numberSidesPerDie);
-            //if (totalNumberSymbolsToConsume > maxOnThisDie)
-            //{
             int childNumberSymbolsToConsume = totalNumberSymbolsToConsume - currentNumberSymbolsToConsume;
-            TreeNode<DiceConstruct> node = new TreeNode<DiceConstruct>(newDie);
-            List<TreeNode<DiceConstruct>> children = new List<TreeNode<DiceConstruct>>();
+            newMaxNumberSymbolsPerDie = Math.Min(newMaxNumberSymbolsPerDie, childNumberSymbolsToConsume);
+            TreeNode<DiceConstruct> node = new TreeNode<DiceConstruct>(newDie);            
             while (newMaxNumberSymbolsPerDie > 0)
             {
                 TreeNode<DiceConstruct> child = ConstructTreeOfDice(numberSidesPerDie, newMaxNumberSymbolsPerDie, childNumberSymbolsToConsume);
                 if (child != null)
-                {
-                    children.Add(child);
+                {                    
+                    node.AddChild(child);
                 }
                 newMaxNumberSymbolsPerDie--;
-            }
-            node.AddChildren(children);
+            }            
             return node;
-            //}            
-            //return new TreeNode<DiceConstruct>(newDie);
         }
 
         static void TestAll()

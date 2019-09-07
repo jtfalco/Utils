@@ -8,7 +8,7 @@ using System.Text;
 namespace DieFaceDistributer
 {
 
-    public class TreeNode<T> : IEnumerable<T> // From https://stackoverflow.com/a/10442244 contributed by Ronnie Overby, edited by me
+    public class TreeNode<T>  // From https://stackoverflow.com/a/10442244 contributed by Ronnie Overby, edited by me
     {
         private readonly T _value;
         private readonly List<TreeNode<T>> _children = new List<TreeNode<T>>();
@@ -48,17 +48,29 @@ namespace DieFaceDistributer
 
         public IEnumerable<TreeNode<T>> AddChildren(params T[] values)
         {
-            return values.Select(AddChild);
+            foreach(T value in values)
+            {
+                AddChild(new TreeNode<T>(value));
+            }
+            return Children;
         }
 
         public IEnumerable<TreeNode<T>> AddChildren(IEnumerable<T> values)
         {
-            return values.Select(AddChild);
+            foreach(T value in values)
+            {
+                AddChild(new TreeNode<T>(value));
+            }
+            return Children;
         }
 
         public IEnumerable<TreeNode<T>> AddChildren(IEnumerable<TreeNode<T>> values)
         {
-            return values.Select(AddChild);
+            foreach(TreeNode<T> value in values)
+            {
+                AddChild(value);
+            }
+            return values;
         }
 
         public bool RemoveChild(TreeNode<T> node)
@@ -94,7 +106,7 @@ namespace DieFaceDistributer
                 yield return child.Value;
             }
         }
-        */
+        
         
         public IEnumerator<T> GetEnumerator()
         {
@@ -112,7 +124,7 @@ namespace DieFaceDistributer
             {
                 yield return child.Value;
             }
-        }
+        }*/
 
         public IEnumerable<T> Flatten()
         {
