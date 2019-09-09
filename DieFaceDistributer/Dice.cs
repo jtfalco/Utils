@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace DieFaceDistributer
 {
-    class DiceConstruct
+    class Dice
     {
         public const int Blank = 0;
         public int NumberOfSides {
@@ -52,21 +52,31 @@ namespace DieFaceDistributer
             return (Decimal)(SideSymbolIds.Aggregate((total, aggregand) => total + (aggregand == symbol ? 1 : 0))) / (Decimal)NumberOfSides;
         }
 
+        public Fraction FractionOddsOnSymbol(int symbol)
+        {
+            return new Fraction { Numerator = SideSymbolIds.Aggregate((total, aggregand) => total + (aggregand == symbol ? 1 : 0)), Denominator = NumberOfSides };
+        }
+
         public string PercentThatAreSymbol(int symbol)
         {
             return OddsOnSymbol(symbol).ToString("P");
         }
 
-        public DiceConstruct Copy()
+        public string FractionThatAreSymbol(int symbol)
         {
-            DiceConstruct res = new DiceConstruct { NumberOfSides = SideSymbolIds.Length };            
+            return FractionOddsOnSymbol(symbol).ToString();
+        }
+
+        public Dice Copy()
+        {
+            Dice res = new Dice { NumberOfSides = SideSymbolIds.Length };            
             Array.Copy(SideSymbolIds, res.SideSymbolIds, NumberOfSides);
             return res;
         }
 
-        public DiceConstruct MergeNonBlanks(DiceConstruct merging)
+        public Dice MergeNonBlanks(Dice merging)
         {
-            DiceConstruct res = Copy();            
+            Dice res = Copy();            
             res.SideSymbolIds.OrderBy(a => a);
             merging.SideSymbolIds.OrderByDescending(a => a);
             for(int i = 0; i < merging.NumberOfSides && i < res.NumberOfSides; i++)
@@ -95,9 +105,9 @@ namespace DieFaceDistributer
             throw new ArgumentException("Cannot reference side " + index.ToString() + ": only " + NumberOfSides.ToString() + " sides on this die.  (Sides counted from 0)");
         }
 
-        public static DiceConstruct ConstructWithNSidesOfXSymbol(int x, int n, int totalNumberOfSides)
+        public static Dice ConstructWithNSidesOfXSymbol(int x, int n, int totalNumberOfSides)
         {
-            DiceConstruct construct = new DiceConstruct { NumberOfSides = totalNumberOfSides };
+            Dice construct = new Dice { NumberOfSides = totalNumberOfSides };
             for(int i = 0; i < totalNumberOfSides && i < n; i++)
             {
                 construct.SideSymbolIds[i] = x;
@@ -105,9 +115,9 @@ namespace DieFaceDistributer
             return construct;
         }
 
-        public static DiceConstruct ConstructWithEnumerableSidesOfEnumerableSymbols(IEnumerable<int> symbols, IEnumerable<int> numbersOfSides, int totalNumberOfSides)
+        public static Dice ConstructWithEnumerableSidesOfEnumerableSymbols(IEnumerable<int> symbols, IEnumerable<int> numbersOfSides, int totalNumberOfSides)
         {
-            DiceConstruct construct = new DiceConstruct { NumberOfSides = totalNumberOfSides };
+            Dice construct = new Dice { NumberOfSides = totalNumberOfSides };
             int i = 0, accumulator = 0;
             IEnumerator<int> symEnum = symbols.GetEnumerator(), sidEnum = numbersOfSides.GetEnumerator();
             while(symEnum.MoveNext() && sidEnum.MoveNext())
@@ -138,7 +148,7 @@ namespace DieFaceDistributer
             return builder.Append(endCaps[1]);            
         }
 
-        public static DiceConstruct Deserialize(string input)
+        public static Dice Deserialize(string input)
         {
             if(!(input.IndexOf(endCaps[0]) == 0))
             {
@@ -164,19 +174,19 @@ namespace DieFaceDistributer
                 listOfSymbolIds.Add(nextSymbolId);
                 currentIndex = nextIndex + 1;
             }
-            return new DiceConstruct { SideSymbolIds = listOfSymbolIds.ToArray()};
+            return new Dice { SideSymbolIds = listOfSymbolIds.ToArray()};
         }
 
         public static List<string> TestSerializationSamples()
         {
             List<string> errors = new List<string>();
             int[] SymbolIds = { 1 };
-            DiceConstruct dc = new DiceConstruct{ SideSymbolIds = SymbolIds};
+            Dice dc = new Dice{ SideSymbolIds = SymbolIds};
             errors.AddRange(TestSerialization(dc, "{1}"));
             return errors;
         }
 
-        public static List<string> TestSerialization(DiceConstruct serializeMe, string serializationResult)
+        public static List<string> TestSerialization(Dice serializeMe, string serializationResult)
         {
             List<string> errors = new List<string>();
             if (serializeMe.Serialize() != serializationResult)
@@ -200,16 +210,16 @@ namespace DieFaceDistributer
         {
             List<string> errors = new List<string>();
             int[] SymbolIds = { 1 };
-            errors.AddRange(TestDeserialization("{1}", new DiceConstruct{SideSymbolIds = SymbolIds }));
+            errors.AddRange(TestDeserialization("{1}", new Dice{SideSymbolIds = SymbolIds }));
             SymbolIds = SymbolIds.Append(2).ToArray();
-            errors.AddRange(TestDeserialization("{2,1}", new DiceConstruct{ SideSymbolIds = SymbolIds }));
+            errors.AddRange(TestDeserialization("{2,1}", new Dice{ SideSymbolIds = SymbolIds }));
             return errors;
         }
 
-        public static List<string> TestDeserialization(string deserializeMe, DiceConstruct checkMe)
+        public static List<string> TestDeserialization(string deserializeMe, Dice checkMe)
         {
             List<string> errors = new List<string>();
-            DiceConstruct newConstruct = DiceConstruct.Deserialize(deserializeMe);
+            Dice newConstruct = Dice.Deserialize(deserializeMe);
             IEnumerable<int> intersection = checkMe.SideSymbolIds.Intersect(newConstruct.SideSymbolIds);
             if(intersection.Count() != newConstruct.NumberOfSides || intersection.Count() != checkMe.NumberOfSides || intersection.Count() != newConstruct.SideSymbolIds.Length || intersection.Count() != checkMe.SideSymbolIds.Length)
             {
