@@ -3,7 +3,11 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <StartupObject>DieFaceDistributer.ConsoleApp</StartupObject>
+    <StartupObject>DieFaceDistributerConsoleApp.ConsoleApp</StartupObject>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DieFaceDistributorDLL\DieFaceDistributer.csproj" />
+  </ItemGroup>
 
 </Project>
