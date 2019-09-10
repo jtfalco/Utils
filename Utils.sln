@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.329
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29230.47
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DieFaceDistributerConsoleApp", "DieFaceDistributer\DieFaceDistributerConsoleApp.csproj", "{2271609E-E421-4AB3-9763-AAD1BABA2E20}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DieFaceDistributer", "DieFaceDistributorDLL\DieFaceDistributer.csproj", "{4C4342FE-F694-4569-8BD0-4DDE4CA1FA1B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DieFaceDistributer", "DieFaceDistributorDLL\DieFaceDistributer.csproj", "{4C4342FE-F694-4569-8BD0-4DDE4CA1FA1B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DieFaceDistributer", "DieFaceDistributer", "{D5706784-681E-4B5D-861E-403F6D06F3B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DieFaceDistributerWebApp", "DieFaceDistributerWebApp\DieFaceDistributerWebApp.csproj", "{E1C51193-0CA2-4B83-9B47-6764021BFAA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,6 +25,10 @@ Global
 		{4C4342FE-F694-4569-8BD0-4DDE4CA1FA1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C4342FE-F694-4569-8BD0-4DDE4CA1FA1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C4342FE-F694-4569-8BD0-4DDE4CA1FA1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1C51193-0CA2-4B83-9B47-6764021BFAA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1C51193-0CA2-4B83-9B47-6764021BFAA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1C51193-0CA2-4B83-9B47-6764021BFAA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1C51193-0CA2-4B83-9B47-6764021BFAA1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -30,6 +36,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{2271609E-E421-4AB3-9763-AAD1BABA2E20} = {D5706784-681E-4B5D-861E-403F6D06F3B5}
 		{4C4342FE-F694-4569-8BD0-4DDE4CA1FA1B} = {D5706784-681E-4B5D-861E-403F6D06F3B5}
+		{E1C51193-0CA2-4B83-9B47-6764021BFAA1} = {D5706784-681E-4B5D-861E-403F6D06F3B5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A8652C7E-A0F0-47E5-A5AF-1D294506BFD7}
