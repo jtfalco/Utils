@@ -91,6 +91,17 @@ namespace DieFaceDistributer
             yield break;
         }
 
+        public IEnumerable<T> Parents()
+        {
+            TreeNode<T> parent = this.Parent;
+            while (parent != null)
+            {
+                yield return parent.Value;
+                parent = parent.Parent;
+            }
+            yield break;
+        }
+
         public void Traverse(Action<T> action)
         {
             action(Value);

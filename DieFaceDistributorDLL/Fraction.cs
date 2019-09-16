@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace DieFaceDistributer
 {
-    class Fraction : IComparable
+    public class Fraction : IComparable
     {
         public long Numerator { get; set; }
         public long Denominator {

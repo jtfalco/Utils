@@ -2,38 +2,47 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Numerics;
+using Rationals;
+using DieFaceDistributer;
 
 namespace DieFaceDistributer
 {
     public class SingleWinningSymbolHelper
     {
-        public static List<string> ShowNumbersOfWinningSymbolsAndOdds(int numberOfSymbol, int targetNumber, int sidesPerDie = 6)
-        {
-            List<string> answer = new List<string>();
+        public static IEnumerable<Tuple<IEnumerable<Dice>, Rational>> ShowNumbersOfWinningSymbolsAndOdds(int numberOfSymbol, int targetNumber, int minNumberOfDice, int maxNumberOfDice, int sidesPerDie = 6)
+        {            
             List<TreeNode<Dice>> diceForest = new List<TreeNode<Dice>>();
-            IEnumerable<TreeNode<Tuple<Dice, string, List<Fraction>>>> scoreOddsForest = new List<TreeNode<Tuple<Dice, string, List<Fraction>>>>();
+            IEnumerable<TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>>> scoreOddsForest = GrowOddsForest(sidesPerDie, numberOfSymbol);            
+
+            scoreOddsForest = scoreOddsForest.OrderByDescending(a => a.Value.Item3.Skip(targetNumber).Aggregate(new Rational(new BigInteger(0), new BigInteger(1)), (b, c) => b + c));
+            foreach (TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>> scoreOddsTreeChild in scoreOddsForest)
+            {                
+                Tuple<IEnumerable<Dice>, Rational> yieldedAnswer = new Tuple<IEnumerable<Dice>, Rational>(scoreOddsTreeChild.Value.Item2, scoreOddsTreeChild.Value.Item3.Skip(targetNumber).Aggregate(new Rational(new BigInteger(0), new BigInteger(1)), (a, b) => a + b));                
+                int count = yieldedAnswer.Item1.Count();
+                if(count <= maxNumberOfDice && count >= minNumberOfDice) yield return yieldedAnswer; 
+            }
+            yield break;
+        }
+
+        private static IEnumerable<TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>>> GrowOddsForest(int sidesPerDie, int numberOfSymbol)
+        {
             int newMaxNumberSymbolsPerDie = Math.Min(sidesPerDie, numberOfSymbol);
             while (newMaxNumberSymbolsPerDie > 0)
             {
                 TreeNode<Dice> tree = ConstructTreeOfDice(sidesPerDie, newMaxNumberSymbolsPerDie, numberOfSymbol);
                 if (tree != null)
-                {
-                    diceForest.Add(tree);
-                    TreeNode<Tuple<Dice, string, List<Fraction>>> scoreOddsTree = BuildOddsListingAndDiceDescription(tree, string.Empty, new List<Fraction>());
-                    IEnumerable<TreeNode<Tuple<Dice, string, List<Fraction>>>> scoreOddsTreeChildren = scoreOddsTree.DeepestChildren();
-                    scoreOddsForest = scoreOddsForest.Concat(scoreOddsTreeChildren);
+                {                    
+                    TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>> scoreOddsTree = BuildOddsListingAndDiceDescription(tree, null, new List<Rational>());
+                    IEnumerable<TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>>> scoreOddsTreeChildren = scoreOddsTree.DeepestChildren(); //Is this necessary?
+                    foreach(TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>> child in scoreOddsTreeChildren)
+                    {
+                        yield return child;
+                    }                    
                 }
                 newMaxNumberSymbolsPerDie--;
             }
-
-            scoreOddsForest = scoreOddsForest.OrderByDescending(a => a.Value.Item3.Skip(targetNumber).Aggregate(new Fraction { Numerator = 0, Denominator = 1 }, (b, c) => b + c));
-            foreach (TreeNode<Tuple<Dice, string, List<Fraction>>> scoreOddsTreeChild in scoreOddsForest)
-            {
-                int[] winners = new int[] { 1 };
-                string target = scoreOddsTreeChild.Value.Item2 + ":" + scoreOddsTreeChild.Value.Item3.Skip(targetNumber).Aggregate(new Fraction { Numerator = 0, Denominator = 1 }, (a, b) => a + b).ToString();
-                answer.Add(target);
-            }
-            return answer;
+            yield break;
         }
 
         static void ShowNumbersOfWinningSymbolsAndOddsTheOldWay(int numberOfSymbol, int targetNumber, int sidesPerDie = 6)
@@ -56,11 +65,11 @@ namespace DieFaceDistributer
             }
         }
 
-        private static TreeNode<Tuple<Dice, string, List<Fraction>>> BuildOddsListingAndDiceDescription(TreeNode<Dice> diceTree, string parentString, List<Fraction> currentOdds)
+        private static TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>> BuildOddsListingAndDiceDescription(TreeNode<Dice> diceTree, IEnumerable<Dice> currentList, List<Rational> currentOdds)
         {
             int[] winners = new int[] { 1 };
-            Tuple<Dice, string, List<Fraction>> scoreOddsUpToThisDie = new Tuple<Dice, string, List<Fraction>>(diceTree.Value, (parentString == string.Empty ? parentString : parentString + ",") + diceTree.Value.NumberOfWinningSides(winners), FractionallyMarkovMyChainButOnlyForSuccesses(currentOdds, diceTree.Value.FractionOddsOnSymbol(1)));
-            TreeNode<Tuple<Dice, string, List<Fraction>>> answer = new TreeNode<Tuple<Dice, string, List<Fraction>>>(scoreOddsUpToThisDie);
+            Tuple<Dice, IEnumerable<Dice>, List<Rational>> scoreOddsUpToThisDie = new Tuple<Dice, IEnumerable<Dice>, List<Rational>>(diceTree.Value, (currentList ?? diceTree.Parents()).Append(diceTree.Value), RationalallyMarkovMyChainButOnlyForSuccesses(currentOdds, diceTree.Value.RationalOddsOnSymbol(1)));
+            TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>> answer = new TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>>(scoreOddsUpToThisDie);
             if (diceTree.Children.Count == 0)
             {
                 return answer;
@@ -118,29 +127,29 @@ namespace DieFaceDistributer
             return answer;
         }
 
-        static List<Fraction> FractionallyMarkovMyChainButOnlyForSuccesses(List<Fraction> currentFractions, Fraction oddsOfNewSuccess)
+        static List<Rational> RationalallyMarkovMyChainButOnlyForSuccesses(List<Rational> currentRationals, Rational oddsOfNewSuccess)
         {
-            List<Fraction> answer = new List<Fraction>();
-            Fraction One = new Fraction { Numerator = 1, Denominator = 1 };
-            if (currentFractions.Count == 0)
+            List<Rational> answer = new List<Rational>();
+            Rational One = new Rational(new BigInteger(1), new BigInteger(1));
+            if (currentRationals.Count == 0)
             {
                 answer.Add(One - oddsOfNewSuccess);
                 answer.Add(oddsOfNewSuccess);
                 return answer;
             }
-            for (int i = 0; i < currentFractions.Count; i++)
+            for (int i = 0; i < currentRationals.Count; i++)
             {
                 if (i == 0)
                 {
-                    answer.Add(currentFractions[0] * (One - oddsOfNewSuccess)); //Odds of having gotten 0 successes, total
+                    answer.Add(currentRationals[0] * (One - oddsOfNewSuccess)); //Odds of having gotten 0 successes, total
                 }
                 else
                 {
-                    answer.Add(currentFractions[i - 1] * (oddsOfNewSuccess) + currentFractions[i] * (One - oddsOfNewSuccess));
+                    answer.Add(currentRationals[i - 1] * (oddsOfNewSuccess) + currentRationals[i] * (One - oddsOfNewSuccess));
                     //Previous line: Odds of having gotten i-1 successes AND getting one on this roll, or, having gotten i successes AND not getting one on this roll
                 }
             }
-            answer.Add(currentFractions[currentFractions.Count - 1] * oddsOfNewSuccess); //Odds of getting a number of success on each rolled die.  Impressive!
+            answer.Add(currentRationals[currentRationals.Count - 1] * oddsOfNewSuccess); //Odds of getting a number of success on each rolled die.  Impressive!
             return answer;
         }
 

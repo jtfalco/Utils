@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using Rationals;
+using System.Numerics;
 
 namespace DieFaceDistributer
 {
-    class Dice
+    public class Dice
     {
         public const int Blank = 0;
         public int NumberOfSides {
@@ -19,11 +21,26 @@ namespace DieFaceDistributer
                 }
             }
         }
-        public int NumberOfWinningSides(int[] winningSides)
+        public int NumberOfWinningSides(int[] winningSides = null)
         {
-            return SideSymbolIds.Count(a => winningSides.Contains(a));            
+            int[] checkThese = winningSides ?? WinningSides;
+            return SideSymbolIds.Count(a => checkThese.Contains(a));            
         }
         public int[] SideSymbolIds { get; set; }
+        public int[] WinningSides
+        {
+            get
+            {
+                if (BaseWinningSides != null) return BaseWinningSides;
+                return defaultWinningSides;
+            }
+            set
+            {
+                if(value != null) BaseWinningSides = value;
+            }
+        }
+        private static int[] defaultWinningSides = new int[] { 1 };
+        private int[] BaseWinningSides { get; set; }
         public bool IsEmpty()
         {
             return SideSymbolIds.All(a => a == Blank);
@@ -52,9 +69,10 @@ namespace DieFaceDistributer
             return (Decimal)(SideSymbolIds.Aggregate((total, aggregand) => total + (aggregand == symbol ? 1 : 0))) / (Decimal)NumberOfSides;
         }
 
-        public Fraction FractionOddsOnSymbol(int symbol)
+        public Rational RationalOddsOnSymbol(int symbol)
         {
-            return new Fraction { Numerator = SideSymbolIds.Aggregate((total, aggregand) => total + (aggregand == symbol ? 1 : 0)), Denominator = NumberOfSides };
+            return new Rational(SideSymbolIds.Aggregate((total, aggregand) => total + (aggregand == symbol ? 1 : 0)), NumberOfSides);
+            //{ Numerator = SideSymbolIds.Aggregate((total, aggregand) => total + (aggregand == symbol ? 1 : 0)), Denominator = NumberOfSides };
         }
 
         public string PercentThatAreSymbol(int symbol)
@@ -62,9 +80,9 @@ namespace DieFaceDistributer
             return OddsOnSymbol(symbol).ToString("P");
         }
 
-        public string FractionThatAreSymbol(int symbol)
+        public string RationalThatAreSymbol(int symbol)
         {
-            return FractionOddsOnSymbol(symbol).ToString();
+            return RationalOddsOnSymbol(symbol).ToString();
         }
 
         public Dice Copy()
