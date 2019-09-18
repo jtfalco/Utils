@@ -91,6 +91,17 @@ namespace DieFaceDistributer
             yield break;
         }
 
+        public int DeepestDepth()
+        {
+            int answer = 0;
+            if (_children.Count == 0) return answer;
+            foreach(TreeNode<T> child in _children)
+            {
+                answer = Math.Max(answer, 1 + child.DeepestDepth());
+            }
+            return answer;
+        }
+
         public IEnumerable<T> Parents()
         {
             TreeNode<T> parent = this.Parent;

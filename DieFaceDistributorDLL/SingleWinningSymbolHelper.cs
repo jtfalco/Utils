@@ -13,7 +13,7 @@ namespace DieFaceDistributer
         public static IEnumerable<Tuple<IEnumerable<Dice>, Rational>> ShowNumbersOfWinningSymbolsAndOdds(int numberOfSymbol, int targetNumber, int minNumberOfDice, int maxNumberOfDice, int sidesPerDie = 6)
         {            
             List<TreeNode<Dice>> diceForest = new List<TreeNode<Dice>>();
-            IEnumerable<TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>>> scoreOddsForest = GrowOddsForest(sidesPerDie, numberOfSymbol);            
+            IEnumerable<TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>>> scoreOddsForest = GrowOddsForest(sidesPerDie, numberOfSymbol, maxNumberOfDice, minNumberOfDice);            
 
             scoreOddsForest = scoreOddsForest.OrderByDescending(a => a.Value.Item3.Skip(targetNumber).Aggregate(new Rational(new BigInteger(0), new BigInteger(1)), (b, c) => b + c));
             foreach (TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>> scoreOddsTreeChild in scoreOddsForest)
@@ -25,12 +25,13 @@ namespace DieFaceDistributer
             yield break;
         }
 
-        private static IEnumerable<TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>>> GrowOddsForest(int sidesPerDie, int numberOfSymbol)
+        private static IEnumerable<TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>>> GrowOddsForest(int sidesPerDie, int numberOfSymbol, int maxNumberOfDice, int minNumberOfDice)
         {
             int newMaxNumberSymbolsPerDie = Math.Min(sidesPerDie, numberOfSymbol);
+            newMaxNumberSymbolsPerDie = Math.Min(numberOfSymbol - (minNumberOfDice - 1), newMaxNumberSymbolsPerDie);
             while (newMaxNumberSymbolsPerDie > 0)
             {
-                TreeNode<Dice> tree = ConstructTreeOfDice(sidesPerDie, newMaxNumberSymbolsPerDie, numberOfSymbol);
+                TreeNode<Dice> tree = ConstructTreeOfDice(sidesPerDie, newMaxNumberSymbolsPerDie, numberOfSymbol, maxNumberOfDice, minNumberOfDice);
                 if (tree != null)
                 {                    
                     TreeNode<Tuple<Dice, IEnumerable<Dice>, List<Rational>>> scoreOddsTree = BuildOddsListingAndDiceDescription(tree, null, new List<Rational>());
@@ -47,7 +48,7 @@ namespace DieFaceDistributer
 
         static void ShowNumbersOfWinningSymbolsAndOddsTheOldWay(int numberOfSymbol, int targetNumber, int sidesPerDie = 6)
         {
-            TreeNode<Dice> initialTree = StartConstructingTreeOfDice(sidesPerDie, Math.Min(sidesPerDie, numberOfSymbol), numberOfSymbol);
+            TreeNode<Dice> initialTree = StartConstructingTreeOfDice(sidesPerDie, Math.Min(sidesPerDie, numberOfSymbol), numberOfSymbol, 0, 0);
             TreeNode<Tuple<Dice, List<decimal>>> scoreOddsTree = BuildOddsListingAndDiceDescriptionTheOldWay(initialTree, new List<decimal>());
             List<TreeNode<Tuple<Dice, List<decimal>>>> scoreOddsTreeChildren = scoreOddsTree.DeepestChildren().ToList();
             foreach (TreeNode<Tuple<Dice, List<decimal>>> scoreOddsTreeChild in scoreOddsTreeChildren)
@@ -153,13 +154,13 @@ namespace DieFaceDistributer
             return answer;
         }
 
-        static TreeNode<Dice> StartConstructingTreeOfDice(int numberSidesPerDie, int maxNumberSymbolsPerDie, int totalNumberSymbolsToConsume)
+        static TreeNode<Dice> StartConstructingTreeOfDice(int numberSidesPerDie, int maxNumberSymbolsPerDie, int totalNumberSymbolsToConsume, int maxNumberOfDice, int minNumberOfDice)
         {
             TreeNode<Dice> node = new TreeNode<Dice>(new Dice { NumberOfSides = numberSidesPerDie });
             int newMaxNumberSymbolsPerDie = Math.Min(numberSidesPerDie, maxNumberSymbolsPerDie);
             while (newMaxNumberSymbolsPerDie > 0)
             {
-                TreeNode<Dice> child = ConstructTreeOfDice(numberSidesPerDie, newMaxNumberSymbolsPerDie, totalNumberSymbolsToConsume);
+                TreeNode<Dice> child = ConstructTreeOfDice(numberSidesPerDie, newMaxNumberSymbolsPerDie, totalNumberSymbolsToConsume, maxNumberOfDice - 1, minNumberOfDice - 1);
                 if (child != null)
                 {
                     node.AddChild(child);
@@ -169,12 +170,12 @@ namespace DieFaceDistributer
             return node;
         }
 
-        static TreeNode<Dice> ConstructTreeOfDice(int numberSidesPerDie, int maxNumberSymbolsPerDie, int totalNumberSymbolsToConsume)
+        static TreeNode<Dice> ConstructTreeOfDice(int numberSidesPerDie, int maxNumberSymbolsPerDie, int totalNumberSymbolsToConsume, int maxNumberOfDice, int minNumberOfDice)
         {
             int maxOnThisDie = Math.Min(numberSidesPerDie, maxNumberSymbolsPerDie),
                 currentNumberSymbolsToConsume = Math.Min(totalNumberSymbolsToConsume, maxOnThisDie),
             newMaxNumberSymbolsPerDie = Math.Min(maxNumberSymbolsPerDie, currentNumberSymbolsToConsume);
-            if (maxOnThisDie < 1 || totalNumberSymbolsToConsume < 1)
+            if (maxOnThisDie < 1 || totalNumberSymbolsToConsume < 1 || maxNumberOfDice < 1 || maxOnThisDie + (newMaxNumberSymbolsPerDie * (maxNumberOfDice - 1)) < totalNumberSymbolsToConsume)
             {
                 return null;
             }
@@ -184,8 +185,8 @@ namespace DieFaceDistributer
             TreeNode<Dice> node = new TreeNode<Dice>(newDie);
             while (newMaxNumberSymbolsPerDie > 0)
             {
-                TreeNode<Dice> child = ConstructTreeOfDice(numberSidesPerDie, newMaxNumberSymbolsPerDie, childNumberSymbolsToConsume);
-                if (child != null)
+                TreeNode<Dice> child = ConstructTreeOfDice(numberSidesPerDie, newMaxNumberSymbolsPerDie, childNumberSymbolsToConsume, maxNumberOfDice - 1, minNumberOfDice - 1);                                
+                if (child != null && child.DeepestDepth() >= minNumberOfDice - 1)
                 {
                     node.AddChild(child);
                 }
