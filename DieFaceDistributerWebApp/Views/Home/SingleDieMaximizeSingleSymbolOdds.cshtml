@@ -1,0 +1,32 @@
+﻿@model IEnumerable<DieFaceDistributerWebApp.Models.SingleSymbolEvaluation>
+
+@{
+    
+    ViewData["Title"] = "SingleDieMaximizeSingleSymbolOdds";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>How to Arrange Copies of One Symbol amongst Dice</h1>
+
+<p>
+    This will help you with how you should arrange copies of one winning symbol among your dice to maximize your odds of seeing that symbol a Targeted Number of times When you roll those dice.
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.LabelFor(a => a.FirstOrDefault().Dice)</th>
+            <th>@Html.LabelFor(a => a.FirstOrDefault().OddsOfGettingDesiredTN)</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @item.Dice.Select(a => a.NumberOfWinningSides(a.WinningSides).ToString()).Aggregate((b, c) => b + "," + c)
+            </td>
+            <td>@item.OddsOfGettingDesiredTN.ToString("C")</td>
+        </tr>
+}
+    </tbody>
+</table>

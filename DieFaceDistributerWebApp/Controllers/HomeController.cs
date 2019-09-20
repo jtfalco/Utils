@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using DieFaceDistributerWebApp.Models;
+using DieFaceDistributer;
+using Rationals;
 
 namespace DieFaceDistributerWebApp.Controllers
 {
@@ -25,5 +27,29 @@ namespace DieFaceDistributerWebApp.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        [HttpGet, HttpPost]
+        public IActionResult SingleDieMaximizeSingleSymbolOdds(SingleSymbolRequest request)
+        {
+            /*
+            foreach (Tuple<IEnumerable<Dice>, Rational> pairing in pairingsOfDiceSetsToTheirOddsOfGettingTheTN)
+            { //"FormattingForDice", "FormattingForOdds", "FormattingBetween"
+                textToDisplay.Add(SerializeForConsole(pairing.Item1, pairing.Item2, formatFriendlyArgs["FormattingForDice"], formatFriendlyArgs["FormattingForOdds"], formatFriendlyArgs["FormattingBetween"]));
+            }
+            textToDisplay.ForEach(a => Console.WriteLine(a));
+            */
+            
+            if (HttpContext.Request.Method == "GET") return View();
+            IEnumerable<Tuple<IEnumerable<Dice>, Rational>> pairingsOfDiceSetsToTheirOddsOfGettingTheTN;
+            pairingsOfDiceSetsToTheirOddsOfGettingTheTN = SingleWinningSymbolHelper.ShowNumbersOfWinningSymbolsAndOdds(request.NumberOfSymbol, request.TargetNumber, request.MinNumberOfDice, request.MaxNumberOfDice, request.NumSidesPerDie);
+            return View(pairingsOfDiceSetsToTheirOddsOfGettingTheTN.Select(a => new SingleSymbolEvaluation { Dice = a.Item1, OddsOfGettingDesiredTN = a.Item2}));            
+        }
+
+        [HttpGet]
+        public IActionResult Prepare()
+        {
+            return View();
+        }
+
     }
 }

@@ -186,7 +186,7 @@ namespace DieFaceDistributer
             while (newMaxNumberSymbolsPerDie > 0)
             {
                 TreeNode<Dice> child = ConstructTreeOfDice(numberSidesPerDie, newMaxNumberSymbolsPerDie, childNumberSymbolsToConsume, maxNumberOfDice - 1, minNumberOfDice - 1);                                
-                if (child != null && child.DeepestDepth() >= minNumberOfDice - 1)
+                if (child != null && child.DeepestDepth() >= minNumberOfDice - 2)
                 {
                     node.AddChild(child);
                 }
