@@ -12,7 +12,7 @@ namespace DieFaceDistributerWebApp.Models
     {
         [Display(Name = "A Result Grouping of Dice")]
         public IEnumerable<Dice> Dice { get; set; }
-        [Display(Name = "The Odds that, when each of the Dice in this Grouping of Dice are rolled, that at least the Target Number of Winning Symbols were among the Results")]
+        [Display(Name = "Odds of Success")]
         public Rational OddsOfGettingDesiredTN { get; set; }
 
         #region ReadOnlies

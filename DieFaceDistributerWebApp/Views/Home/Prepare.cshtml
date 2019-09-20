@@ -7,39 +7,40 @@
 
 <h1>Prepare</h1>
 
-<h4>SingleSymbolRequest</h4>
+<h4>Please enter values, so this tiny web site can help you arrange Winning Symbols on dice.  Defaults are pre-entered, but you can insert your own values.</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-4">        
         <form asp-action="SingleDieMaximizeSingleSymbolOdds">
+            
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="NumberOfSymbol" class="control-label"></label>
-                <input asp-for="NumberOfSymbol" class="form-control" />
+                <input asp-for="NumberOfSymbol" class="form-control" value="3"/>
                 <span asp-validation-for="NumberOfSymbol" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="TargetNumber" class="control-label"></label>
-                <input asp-for="TargetNumber" class="form-control" />
+                <input asp-for="TargetNumber" class="form-control" value="1"/>
                 <span asp-validation-for="TargetNumber" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="NumSidesPerDie" class="control-label"></label>
-                <input asp-for="NumSidesPerDie" class="form-control" />
+                <label asp-for="NumSidesPerDie" class="control-label"></label>                
+                <input asp-for="NumSidesPerDie" class="form-control" value="6" />
                 <span asp-validation-for="NumSidesPerDie" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="MinNumberOfDice" class="control-label"></label>
-                <input asp-for="MinNumberOfDice" class="form-control" />
+                <input asp-for="MinNumberOfDice" class="form-control" value="1"/>
                 <span asp-validation-for="MinNumberOfDice" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="MaxNumberOfDice" class="control-label"></label>
-                <input asp-for="MaxNumberOfDice" class="form-control" />
+                <input asp-for="MaxNumberOfDice" class="form-control" value="200000"/>
                 <span asp-validation-for="MaxNumberOfDice" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="ROLL THEM DICE" class="btn btn-primary" />
             </div>
         </form>
     </div>
