@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Ookii.Dialogs.Wpf;
+using System.Globalization;
 
 namespace DRGSaveFileManager
 {
@@ -24,21 +25,25 @@ namespace DRGSaveFileManager
     {
         private Button[] folderButtons;
         private RadioButton[] radioButtons;
-        private const string SteamFolderPrefix = "SteamFolder=", XboxFolderPrefix = "XboxFolder=", BackupFolderPrefix = "BackupFolder=", RadioButtonPrefix = "Behavior=";
+        private const string SteamFolderPrefix = "SteamFolder=", WindowsAppStoreFolderPrefix = "WindowsAppStoreFolder=", BackupFolderPrefix = "BackupFolder=", RadioButtonPrefix = "Behavior=";
         private const string dateTimeFormat = "yyyy-MM-dd HHmmss";
         private readonly string configPath = System.Environment.CurrentDirectory + "\\application.config";
+        private readonly CultureInfo culture = new CultureInfo("en-US");
         public MainWindow()
         {
             InitializeComponent();            
             ButtonPickSteamFolder.Click += ButtonPickSteamFolder_OnClick;
-            ButtonPickXboxFolder.Click += ButtonPickXboxFolder_OnClick;
+            ButtonPickWindowsAppStoreFolder.Click += ButtonPickWindowsAppStoreFolder_OnClick;
             ButtonPickBackupFolder.Click += ButtonPickBackupFolder_OnClick;
             ButtonExecute.Click += ButtonExecute_OnClick;
             TextboxSteamFolder.TextChanged += TextboxSteamFolder_TextChanged;
-            TextboxXboxFolder.TextChanged += TextboxXboxFolder_TextChanged;
+            TextboxWindowsAppStoreFolder.TextChanged += TextboxWindowsAppStoreFolder_TextChanged;
             TextboxBackupFolder.TextChanged += TextboxBackupFolder_TextChanged;
-            folderButtons = new Button[3] { ButtonPickBackupFolder, ButtonPickSteamFolder, ButtonPickXboxFolder };
-            radioButtons = new RadioButton[4] { RadioButtonBehavior1, RadioButtonBehavior2, RadioButtonBehavior3, RadioButtonBehavior4 };
+            folderButtons = new Button[3] { ButtonPickBackupFolder, ButtonPickSteamFolder, ButtonPickWindowsAppStoreFolder };
+            radioButtons = new RadioButton[10] { 
+                RadioButtonBehavior1, RadioButtonBehavior2, RadioButtonBehavior3, RadioButtonBehavior4, RadioButtonBehavior5,
+                RadioButtonBehavior6, RadioButtonBehavior7, RadioButtonBehavior8, RadioButtonBehavior9, RadioButtonBehavior10
+            };
             try
             {
                 LoadConfigurationFile();
@@ -61,9 +66,9 @@ namespace DRGSaveFileManager
                 {
                     TextboxSteamFolder.Text = line.Substring(SteamFolderPrefix.Length);
                 }
-                else if (line.StartsWith(XboxFolderPrefix))
+                else if (line.StartsWith(WindowsAppStoreFolderPrefix))
                 {
-                    TextboxXboxFolder.Text = line.Substring(XboxFolderPrefix.Length);
+                    TextboxWindowsAppStoreFolder.Text = line.Substring(WindowsAppStoreFolderPrefix.Length);
                 }
                 else if (line.StartsWith(BackupFolderPrefix))
                 {
@@ -92,7 +97,7 @@ namespace DRGSaveFileManager
             using FileStream stream = new FileStream(configPath, FileMode.Append);
             StreamWriter writer = new StreamWriter(stream);
             writer.WriteLine(SteamFolderPrefix + TextboxSteamFolder.Text);
-            writer.WriteLine(XboxFolderPrefix + TextboxXboxFolder.Text);
+            writer.WriteLine(WindowsAppStoreFolderPrefix + TextboxWindowsAppStoreFolder.Text);
             writer.WriteLine(BackupFolderPrefix + TextboxBackupFolder.Text);
             foreach(RadioButton radio in radioButtons)
             {
@@ -107,25 +112,25 @@ namespace DRGSaveFileManager
         private void ButtonPickSteamFolder_OnClick(object sender, RoutedEventArgs e)
         {
             var ookiiDialog = new VistaFolderBrowserDialog();
-            if(ookiiDialog.ShowDialog() == true)
+            if(ookiiDialog.ShowDialog() ?? false)
             {
                 TextboxSteamFolder.Text = ookiiDialog.SelectedPath;
             }
         }
 
-        private void ButtonPickXboxFolder_OnClick(object sender, RoutedEventArgs e)
+        private void ButtonPickWindowsAppStoreFolder_OnClick(object sender, RoutedEventArgs e)
         {
             var ookiiDialog = new VistaFolderBrowserDialog();
-            if (ookiiDialog.ShowDialog() == true)
+            if (ookiiDialog.ShowDialog() ?? false)
             {
-                TextboxXboxFolder.Text = ookiiDialog.SelectedPath;                
+                TextboxWindowsAppStoreFolder.Text = ookiiDialog.SelectedPath;                
             }
         }
 
         private void ButtonPickBackupFolder_OnClick(object sender, RoutedEventArgs e)
         {
             var ookiiDialog = new VistaFolderBrowserDialog();
-            if (ookiiDialog.ShowDialog() == true)
+            if (ookiiDialog.ShowDialog() ?? false)
             {
                 TextboxBackupFolder.Text = ookiiDialog.SelectedPath;
             }
@@ -133,40 +138,40 @@ namespace DRGSaveFileManager
 
         private void ValidateFolders()
         {
-            bool validSteam = false, validXbox = false, validBackup = false;
+            bool validSteam = false, validWindowsAppStore = false, validBackup = false;
             if (System.IO.Directory.Exists(TextboxSteamFolder.Text))
             {
-                RectangleSteam.Visibility = Visibility.Hidden;                
-                RectangleSteam.UpdateLayout();
+                ValidationRectangleSteam.Visibility = Visibility.Hidden;                
+                ValidationRectangleSteam.UpdateLayout();
                 validSteam = true;
-            } else if (RectangleSteam.Visibility == Visibility.Hidden)
+            } else if (ValidationRectangleSteam.Visibility == Visibility.Hidden)
             {
-                RectangleSteam.Visibility = Visibility.Visible;
-                RectangleSteam.UpdateLayout();
+                ValidationRectangleSteam.Visibility = Visibility.Visible;
+                ValidationRectangleSteam.UpdateLayout();
             }
-            if (System.IO.Directory.Exists(TextboxXboxFolder.Text))
+            if (System.IO.Directory.Exists(TextboxWindowsAppStoreFolder.Text))
             {
-                RectangleXbox.Visibility = Visibility.Hidden;
-                RectangleXbox.UpdateLayout();
-                validXbox = true;
+                ValidationRectangleWindowsAppStore.Visibility = Visibility.Hidden;
+                ValidationRectangleWindowsAppStore.UpdateLayout();
+                validWindowsAppStore = true;
             }
-            else if (RectangleXbox.Visibility == Visibility.Hidden)
+            else if (ValidationRectangleWindowsAppStore.Visibility == Visibility.Hidden)
             {
-                RectangleXbox.Visibility = Visibility.Visible;
-                RectangleXbox.UpdateLayout();
+                ValidationRectangleWindowsAppStore.Visibility = Visibility.Visible;
+                ValidationRectangleWindowsAppStore.UpdateLayout();
             }
             if (System.IO.Directory.Exists(TextboxBackupFolder.Text))
             {
-                RectangleBackup.Visibility = Visibility.Hidden;
-                RectangleBackup.UpdateLayout();
+                ValidationRectangleBackup.Visibility = Visibility.Hidden;
+                ValidationRectangleBackup.UpdateLayout();
                 validBackup = true;
             }
-            else if (RectangleBackup.Visibility == Visibility.Hidden)
+            else if (ValidationRectangleBackup.Visibility == Visibility.Hidden)
             {
-                RectangleBackup.Visibility = Visibility.Visible;
-                RectangleBackup.UpdateLayout();
+                ValidationRectangleBackup.Visibility = Visibility.Visible;
+                ValidationRectangleBackup.UpdateLayout();
             }
-            if(validSteam && validXbox && validBackup)
+            if(validSteam && validWindowsAppStore && validBackup)
             {
                 ButtonExecute.IsEnabled = true;
                 ButtonExecute.UpdateLayout();
@@ -182,7 +187,7 @@ namespace DRGSaveFileManager
             ValidateFolders();            
         }
 
-        private void TextboxXboxFolder_TextChanged(object sender, RoutedEventArgs e)
+        private void TextboxWindowsAppStoreFolder_TextChanged(object sender, RoutedEventArgs e)
         {
             ValidateFolders();
         }
@@ -207,24 +212,60 @@ namespace DRGSaveFileManager
             } catch
             {
 
-            }
-            BackupFiles(TextboxSteamFolder.Text, TextboxXboxFolder.Text, TextboxBackupFolder.Text);
+            }            
             string steamPath = TextboxSteamFolder.Text;
-            string xboxPath = TextboxXboxFolder.Text;            
-            if (RadioButtonBehavior1.IsChecked ?? false)
-            {                
-                RunCopyNewerOverOlder(steamPath, xboxPath);                
+            string windowsAppStorePath = TextboxWindowsAppStoreFolder.Text;
+            string backupPath = TextboxBackupFolder.Text;
+            bool backedUpTheFiles = BackupFiles(steamPath, windowsAppStorePath, backupPath);
+            if (RadioButtonBehavior1.IsChecked ?? false)            
+            {
+                RunCopyNewerOverOlder(steamPath, windowsAppStorePath);                
             } else if(RadioButtonBehavior2.IsChecked ?? false)
             {
-                RunCopyOlderOverNewer(steamPath, xboxPath);
+                RunCopyOlderOverNewer(steamPath, windowsAppStorePath);
             } else if (RadioButtonBehavior3.IsChecked ?? false)
             {
-                RunCopySteamOverXbox(steamPath, xboxPath);
-            } else
+                RunCopySteamOverWindowsAppStore(steamPath, windowsAppStorePath);
+            } else if(RadioButtonBehavior4.IsChecked ?? false)
             {
-                RunCopyXboxOverSteam(steamPath, xboxPath);
+                RunCopyWindowsAppStoreOverSteam(steamPath, windowsAppStorePath);
+            } else if (RadioButtonBehavior5.IsChecked ?? false)
+            { 
+                //The next 6 are copying backup folder saves to the regular save locations.
+                //The function needs the selected (newest or hand-picked) backup folder, and which of (Steam, Windows App Store) to copy over.
+                RunCopyBackupOverSave(steamPath, windowsAppStorePath, GetNewestBackupFolder(backupPath, backedUpTheFiles), true, true);                
+            } else if(RadioButtonBehavior6.IsChecked ?? false)
+            {
+                RunCopyBackupOverSave(steamPath, windowsAppStorePath, GetNewestBackupFolder(backupPath, backedUpTheFiles), true, false);                
+            } else if (RadioButtonBehavior7.IsChecked ?? false)
+            {
+                RunCopyBackupOverSave(steamPath, windowsAppStorePath, GetNewestBackupFolder(backupPath, backedUpTheFiles), false, true);                
+            } else if (RadioButtonBehavior8.IsChecked ?? false)
+            {
+                var ookiiDialog = new VistaFolderBrowserDialog();                
+                ookiiDialog.SelectedPath = backupPath + "\\";
+                if (ookiiDialog.ShowDialog() ?? false)
+                {
+                    RunCopyBackupOverSave(steamPath, windowsAppStorePath, ookiiDialog.SelectedPath, true, true);
+                }
+            } else if (RadioButtonBehavior9.IsChecked ?? false)
+            {
+                var ookiiDialog = new VistaFolderBrowserDialog();
+                ookiiDialog.SelectedPath = backupPath + "\\";                
+                if (ookiiDialog.ShowDialog() ?? false)
+                {
+                    RunCopyBackupOverSave(steamPath, windowsAppStorePath, ookiiDialog.SelectedPath, true, false);
+                }
+            } else if (RadioButtonBehavior10.IsChecked ?? false)
+            {
+                var ookiiDialog = new VistaFolderBrowserDialog();
+                ookiiDialog.SelectedPath = backupPath + "\\";
+                if (ookiiDialog.ShowDialog() ?? false)
+                {
+                    RunCopyBackupOverSave(steamPath, windowsAppStorePath, ookiiDialog.SelectedPath, false, true);
+                }
             }
-            
+
 
             foreach (Button button in folderButtons)
             {
@@ -233,43 +274,85 @@ namespace DRGSaveFileManager
             }
         }
 
-        private void BackupFiles(string steamPath, string xboxPath, string backupPath)
+        private string GetNewestBackupFolder(string backupPath, bool backedUpTheFiles)
         {
-            string time = DateTime.Now.ToString(dateTimeFormat);
-            string steamBackupPath = backupPath + "\\" + time + "\\Steam";
-            System.IO.Directory.CreateDirectory(steamBackupPath);
-            string[] steamFiles = System.IO.Directory.GetFiles(steamPath);
-            foreach(string file in steamFiles)
+            string[] allBackupSubfolders = 
+                Directory.GetDirectories(backupPath)                
+                .OrderByDescending<string, string>(a => a).ToArray<string>();
+            int indexOfNewestBackupFolder = 0;
+            if (backedUpTheFiles)
             {
-                System.IO.File.Copy(file, steamBackupPath + "\\" + System.IO.Path.GetFileName(file));
+                indexOfNewestBackupFolder++;
             }
-            string xboxBackupPath = backupPath + "\\" + time + "\\Xbox";
-            System.IO.Directory.CreateDirectory(xboxBackupPath);
-            string[] xboxFiles = System.IO.Directory.GetFiles(xboxPath);
-            foreach(string file in xboxFiles)
-            {
-                System.IO.File.Copy(file, xboxBackupPath + "\\" + System.IO.Path.GetFileName(file));
-            }
+            string resultingPath = allBackupSubfolders[indexOfNewestBackupFolder]; //cheating for debugs! Wooo! (could just return, but this makes it easier to check)
+            return resultingPath;
         }
 
-        private void RunCopyXboxOverSteam(string steamPath, string xboxPath)
+        private bool BackupFiles(string steamPath, string windowsAppStorePath, string backupPath)
+        {
+            try
+            {
+                string time = DateTime.Now.ToString(dateTimeFormat);
+                string steamBackupPath = backupPath + "\\" + time + "\\Steam";
+                System.IO.Directory.CreateDirectory(steamBackupPath);
+                string[] steamFiles = System.IO.Directory.GetFiles(steamPath);
+                foreach (string file in steamFiles)
+                {
+                    System.IO.File.Copy(file, steamBackupPath + "\\" + System.IO.Path.GetFileName(file));
+                }
+                string windowsAppStoreBackupPath = backupPath + "\\" + time + "\\Windows App Store";
+                System.IO.Directory.CreateDirectory(windowsAppStoreBackupPath);
+                string[] windowsAppStoreFiles = System.IO.Directory.GetFiles(windowsAppStorePath);
+                foreach (string file in windowsAppStoreFiles)
+                {
+                    System.IO.File.Copy(file, windowsAppStoreBackupPath + "\\" + System.IO.Path.GetFileName(file));
+                }
+            } catch
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private string DeleteSteamSaveFilesAndGetNewFilePath(string steamPath)
         {
             string[] steamFiles = System.IO.Directory.GetFiles(steamPath);
             string newFilePath = string.Empty;
-            foreach(string file in steamFiles)
+            foreach (string file in steamFiles)
             {
-                if(!file.Contains("steam_autocloud.vdf"))
+                if (!file.Contains("steam_autocloud.vdf"))
                 {
-                    if(file.Contains("_Player.sav"))
+                    if (file.Contains("_Player.sav"))
                     {
                         newFilePath = file;
                     }
                     System.IO.File.Delete(file);
                 }
             }
+            return newFilePath;
+        }
+
+        private string DeleteWindowsAppStoreSaveFilesAndGetNewFilePath(string windowsAppStorePath)
+        {
+            string[] windowsAppStoreFiles = System.IO.Directory.GetFiles(windowsAppStorePath);
+            string newFilePath = string.Empty;
+            foreach (string file in windowsAppStoreFiles)
+            {
+                if (!System.IO.Path.GetFileName(file).StartsWith("container"))
+                {
+                    newFilePath = file;
+                    System.IO.File.Delete(file);
+                }
+            }
+            return newFilePath;
+        }
+
+        private void RunCopyWindowsAppStoreOverSteam(string steamPath, string windowsAppStorePath)
+        {
+            string newFilePath = DeleteSteamSaveFilesAndGetNewFilePath(steamPath);
             string sourceFilePath = string.Empty;
-            string[] xboxFiles = System.IO.Directory.GetFiles(xboxPath);
-            foreach(string file in xboxFiles)
+            string[] windowsAppStoreFiles = System.IO.Directory.GetFiles(windowsAppStorePath);
+            foreach(string file in windowsAppStoreFiles)
             {
                 if (!System.IO.Path.GetFileName(file).StartsWith("container"))
                 {
@@ -279,18 +362,9 @@ namespace DRGSaveFileManager
             System.IO.File.Copy(sourceFilePath, newFilePath);
         }
 
-        private void RunCopySteamOverXbox(string steamPath, string xboxPath)
+        private void RunCopySteamOverWindowsAppStore(string steamPath, string windowsAppStorePath)
         {
-            string[] xboxFiles = System.IO.Directory.GetFiles(xboxPath);
-            string newFilePath = string.Empty;
-            foreach (string file in xboxFiles)
-            {
-                if (!System.IO.Path.GetFileName(file).StartsWith("container"))
-                {
-                    newFilePath = file;
-                    System.IO.File.Delete(file);
-                }
-            }
+            string newFilePath = DeleteWindowsAppStoreSaveFilesAndGetNewFilePath(windowsAppStorePath);
             string sourceFilePath = string.Empty;
             string[] steamFiles = System.IO.Directory.GetFiles(steamPath);
             foreach (string file in steamFiles)
@@ -303,32 +377,32 @@ namespace DRGSaveFileManager
             System.IO.File.Copy(sourceFilePath, newFilePath);
         }
 
-        private void RunCopyOlderOverNewer(string steamPath, string xboxPath)
+        private void RunCopyOlderOverNewer(string steamPath, string windowsAppStorePath)
         {
-            if(IsSteamNewerThanXbox(steamPath, xboxPath))
+            if(IsSteamNewerThanWindowsAppStore(steamPath, windowsAppStorePath))
             {
-                RunCopyXboxOverSteam(steamPath, xboxPath);
+                RunCopyWindowsAppStoreOverSteam(steamPath, windowsAppStorePath);
             } else
             {
-                RunCopySteamOverXbox(steamPath, xboxPath);
+                RunCopySteamOverWindowsAppStore(steamPath, windowsAppStorePath);
             }
         }
 
-        private void RunCopyNewerOverOlder(string steamPath, string xboxPath)
+        private void RunCopyNewerOverOlder(string steamPath, string windowsAppStorePath)
         {
-            if(IsSteamNewerThanXbox(steamPath, xboxPath))
+            if(IsSteamNewerThanWindowsAppStore(steamPath, windowsAppStorePath))
             {
-                RunCopySteamOverXbox(steamPath, xboxPath);
+                RunCopySteamOverWindowsAppStore(steamPath, windowsAppStorePath);
             } else
             {
-                RunCopyXboxOverSteam(steamPath, xboxPath);
+                RunCopyWindowsAppStoreOverSteam(steamPath, windowsAppStorePath);
             }
         }
 
-        private bool IsSteamNewerThanXbox(string steamPath, string xboxPath)
+        private bool IsSteamNewerThanWindowsAppStore(string steamPath, string windowsAppStorePath)
         {
             string pathToSteamSave = string.Empty;
-            string pathToXboxSave = string.Empty;
+            string pathToWindowsAppStoreFile = string.Empty;
             string[] steamFiles = System.IO.Directory.GetFiles(steamPath);
             foreach(string file in steamFiles)
             {
@@ -337,17 +411,60 @@ namespace DRGSaveFileManager
                     pathToSteamSave = file;
                 }
             }
-            string[] xboxFiles = System.IO.Directory.GetFiles(xboxPath);
-            foreach(string file in xboxFiles)
+            string[] windowsAppStoreFiles = System.IO.Directory.GetFiles(windowsAppStorePath);
+            foreach(string file in windowsAppStoreFiles)
             {
                 if(!System.IO.Path.GetFileName(file).StartsWith("container"))
                 {
-                    pathToXboxSave = file;
+                    pathToWindowsAppStoreFile = file;
                 }
             }
             DateTime timeForSteam = System.IO.File.GetLastWriteTime(pathToSteamSave);
-            DateTime timeForXbox = System.IO.File.GetLastWriteTime(pathToXboxSave);
-            return timeForSteam > timeForXbox;
+            DateTime timeForWindowsAppStore = System.IO.File.GetLastWriteTime(pathToWindowsAppStoreFile);
+            return timeForSteam > timeForWindowsAppStore;
+        }
+
+        private void RunCopyBackupOverSave(string steamPath, string windowsAppStorePath, string backupPath, bool copySteamBackup, bool copyWindowsAppStoreBackup)
+        {
+            string copyFromGenericBackupPath = backupPath;
+            string copyFromSteamBackupPath = copyFromGenericBackupPath + "\\Steam";
+            string copyFromWindowsAppStoreBackupPath = copyFromGenericBackupPath + "\\Windows App Store";
+            if(copySteamBackup)
+            {
+                string newPath = DeleteSteamSaveFilesAndGetNewFilePath(steamPath);
+                string[] allFilesInSteamBackupFolder = Directory.GetFiles(copyFromSteamBackupPath);
+                string sourcePath = string.Empty;
+                foreach(string possibleSourceFile in allFilesInSteamBackupFolder)
+                {
+                    if(possibleSourceFile.EndsWith("_Player.sav"))
+                    {
+                        sourcePath = possibleSourceFile;
+                    }
+                }
+                if(string.IsNullOrWhiteSpace(newPath))
+                {
+                    newPath = steamPath + "\\" + System.IO.Path.GetFileName(sourcePath);
+                }
+                File.Copy(sourcePath, newPath);
+            }
+            if(copyWindowsAppStoreBackup)
+            {
+                string newPath = DeleteWindowsAppStoreSaveFilesAndGetNewFilePath(windowsAppStorePath);
+                string[] allFilesInWindowsAppStoreBackupFolder = Directory.GetFiles(copyFromWindowsAppStoreBackupPath);
+                string sourcePath = string.Empty;
+                foreach(string possibleSourceFile in allFilesInWindowsAppStoreBackupFolder)
+                {
+                    if(!System.IO.Path.GetFileName(possibleSourceFile).StartsWith("container"))
+                    {
+                        sourcePath = possibleSourceFile;
+                    }
+                }
+                if(string.IsNullOrWhiteSpace(newPath))
+                {
+                    newPath = windowsAppStorePath + "\\" + System.IO.Path.GetFileName(sourcePath);
+                }
+                File.Copy(sourcePath, newPath);
+            }
         }
     }
 }
