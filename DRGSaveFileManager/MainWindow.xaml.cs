@@ -31,9 +31,11 @@ namespace DRGSaveFileManager
         private readonly string configPath = System.Environment.CurrentDirectory + "\\application.config";
         private readonly CultureInfo culture = new CultureInfo("en-US");
         private readonly string defaultBackupsFolderName = "DRGBackups";
+        private readonly string labelStatusStart = "Status: ";
         public MainWindow()
         {
-            InitializeComponent();            
+            InitializeComponent();
+            LabelStatus.Content = labelStatusStart + "Application loading...";
             ButtonPickSteamFolder.Click += ButtonPickSteamFolder_OnClick;
             ButtonPickWindowsAppStoreFolder.Click += ButtonPickWindowsAppStoreFolder_OnClick;
             ButtonPickBackupFolder.Click += ButtonPickBackupFolder_OnClick;
@@ -57,10 +59,12 @@ namespace DRGSaveFileManager
 
             }
             ValidateFolders();
+            LabelStatus.Content = labelStatusStart + "Application loaded.";
         }
 
         private void LoadConfigurationFile()
-        {            
+        {
+            LabelStatus.Content = labelStatusStart + "Loading configuration...";
             using FileStream stream = new FileStream(configPath, FileMode.OpenOrCreate);
             StreamReader reader = new StreamReader(stream);
             string line = string.Empty;            
@@ -92,10 +96,12 @@ namespace DRGSaveFileManager
                     }
                 }
             }
+            LabelStatus.Content = labelStatusStart + "Configuration loaded.";
         }
 
         private void SaveConfigurationFile()
         {
+            LabelStatus.Content = labelStatusStart + "Saving configuration file...";
             if (File.Exists(configPath)) {
                 File.Delete(configPath);
             }
@@ -112,37 +118,45 @@ namespace DRGSaveFileManager
                 }
             }
             writer.Flush();
+            LabelStatus.Content = labelStatusStart + "Configuration file saved.";
         }
 
         private void ButtonPickSteamFolder_OnClick(object sender, RoutedEventArgs e)
         {
+            LabelStatus.Content = "Please select the folder where the Steam version of Deep Rock Galactic puts its save files.";
             var ookiiDialog = new VistaFolderBrowserDialog();
             if(ookiiDialog.ShowDialog() ?? false)
             {
                 TextboxSteamFolder.Text = ookiiDialog.SelectedPath;
             }
+            LabelStatus.Content = labelStatusStart + "Steam folder set.";
         }
 
         private void ButtonPickWindowsAppStoreFolder_OnClick(object sender, RoutedEventArgs e)
         {
+            LabelStatus.Content = "Please select the folder where the Windows App Store version of Deep Rock Galactic puts its save files.";
             var ookiiDialog = new VistaFolderBrowserDialog();
             if (ookiiDialog.ShowDialog() ?? false)
             {
                 TextboxWindowsAppStoreFolder.Text = ookiiDialog.SelectedPath;                
             }
+            LabelStatus.Content = labelStatusStart + "Windows App Store folder set.";
         }
 
         private void ButtonPickBackupFolder_OnClick(object sender, RoutedEventArgs e)
         {
+            LabelStatus.Content = "Please select the folder where backups of your save files should be and go.";
             var ookiiDialog = new VistaFolderBrowserDialog();
             if (ookiiDialog.ShowDialog() ?? false)
             {
                 TextboxBackupFolder.Text = ookiiDialog.SelectedPath;
             }
+            LabelStatus.Content = labelStatusStart + "Backup folder set.";
         }
 
         private void ValidateFolders()
         {
+            LabelStatus.Content = labelStatusStart + "Validating folder selections...";
             bool validSteam = false, validWindowsAppStore = false, validBackup = false;
             if (System.IO.Directory.Exists(TextboxSteamFolder.Text))
             {
@@ -185,6 +199,7 @@ namespace DRGSaveFileManager
                 ButtonExecute.IsEnabled = false;
                 ButtonExecute.UpdateLayout();
             }
+            LabelStatus.Content = labelStatusStart + "Validation complete. Steam folder: " + (validSteam ? "Exists." : "Does not exist.") + " Windows App Store folder: " + (validWindowsAppStore ? "Exists." : "Does not exist.") + " Backup folder: " + (validBackup ? "Exists." : "Does not exist.");
         }
 
         private void ButtonRecommendBackupFolder_Click(object sender, RoutedEventArgs e)
@@ -207,6 +222,7 @@ namespace DRGSaveFileManager
         {
             try
             {
+                LabelStatus.Content = labelStatusStart + "Recommending Backup folder...";
                 string recommendation = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments).EndWithFolderSeparator();
                 if (Directory.Exists(recommendation) && !Directory.Exists(recommendation + defaultBackupsFolderName))
                 {
@@ -217,6 +233,11 @@ namespace DRGSaveFileManager
                 {
                     TextboxBackupFolder.Text = recommendation;
                     TextboxBackupFolder.UpdateLayout();
+                    LabelStatus.Content = labelStatusStart + "Backup folder recommended.";
+                }
+                else
+                {
+                    LabelStatus.Content = labelStatusStart + "Could not recommend Backup folder.  Make sure to enter an existing folder, use the \"...\" button to the right if you need.";
                 }
             } catch (Exception)
             {
@@ -226,19 +247,27 @@ namespace DRGSaveFileManager
 
         private void RecommendSteamFolderIntoTextbox()
         {
+            LabelStatus.Content = labelStatusStart + "Recommending Steam DRG save folder...";
             string recommendation = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Deep Rock Galactic\\FSD\\Saved\\SaveGames\\";            
             if (!Directory.Exists(recommendation))
             {
                 recommendation = recommendation.Replace("Program Files (x86)", "Program Files");
             }
-            if(Directory.Exists(recommendation))
+            if (Directory.Exists(recommendation))
             {
                 TextboxSteamFolder.Text = recommendation;
                 TextboxSteamFolder.UpdateLayout();
+                LabelStatus.Content = labelStatusStart + "Steam DRG save folder recommended.";
+            }
+            else
+            {
+                LabelStatus.Content = labelStatusStart + "Could not find Steam DRG save folder.  Do you have Steam installed somewhere else?  The usual place is, from the base folder for Steam, Steam\\steamapps\\common\\Deep Rock Galactic\\FSD\\Saved\\SaveGames\\";
             }
         }
 
         private void RecommendWindowsAppStoreFolderIntoTextbox() {
+            LabelStatus.Content = labelStatusStart + "Recommending Windows App Store DRG save folder...";
+            bool noGoodFolderFound = true;
             string appDataFolderString = Environment.GetEnvironmentVariable("LocalAppData").EndWithFolderSeparator();
             //string appDataFolderString = "%LOCALAPPDATA%".EndWithFolderSeparator();
             string packagesFolderString = appDataFolderString + "Packages";
@@ -266,12 +295,18 @@ namespace DRGSaveFileManager
                                     {
                                         TextboxWindowsAppStoreFolder.Text = hexMessTwoAmongThese[j].EndWithFolderSeparator();
                                         TextboxWindowsAppStoreFolder.UpdateLayout();
+                                        noGoodFolderFound = false;
+                                        LabelStatus.Content = labelStatusStart + "Windows App Store DRG save folder recommended.";
                                     }
                                 }
                             }
                         }                        
                     }
                 }
+            }
+            if(noGoodFolderFound)
+            {
+                LabelStatus.Content = labelStatusStart + "Could not recommend Windows App Store DRG save folder.  Is your AppData folder somewhere unexpected, or, does your Windows App Store DRG save somewhere different than normal?";
             }
         }
 
@@ -292,6 +327,7 @@ namespace DRGSaveFileManager
 
         private void ButtonExecute_OnClick(object sender, RoutedEventArgs e)
         {
+            LabelStatus.Content = labelStatusStart + "Disabling buttons while we work...";
             foreach(Button button in folderButtons)
             {
                 button.IsEnabled = false;
@@ -308,8 +344,21 @@ namespace DRGSaveFileManager
             }            
             string steamPath = TextboxSteamFolder.Text;
             string windowsAppStorePath = TextboxWindowsAppStoreFolder.Text;
-            string backupPath = TextboxBackupFolder.Text;
+            string backupPath = TextboxBackupFolder.Text;            
             bool backedUpTheFiles = BackupFiles(steamPath, windowsAppStorePath, backupPath);
+            if (!backedUpTheFiles)
+            {
+                MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show("The file backup was unsuccessful.  The save file that gets replaced will be gone forever if you continue.  Are you sure you wish to continue with the save file replacement?", "No-Backup Confirmation", System.Windows.MessageBoxButton.YesNo);
+                if (messageBoxResult != MessageBoxResult.Yes)
+                {
+                    LabelStatus.Content = labelStatusStart + "Save file management cancelled after backup failed.";
+                    return;
+                }
+                LabelStatus.Content = labelStatusStart + "Continuing file management without backups...";
+            } else
+            {
+                LabelStatus.Content = labelStatusStart + "File backup successful, continuing file management...";
+            }
             if (RadioButtonBehavior1.IsChecked ?? false)            
             {
                 RunCopyNewerOverOlder(steamPath, windowsAppStorePath);                
@@ -359,12 +408,13 @@ namespace DRGSaveFileManager
                 }
             }
 
-
+            LabelStatus.Content = labelStatusStart + "File management seems successful. Re-enabling buttons...";
             foreach (Button button in folderButtons)
             {
                 button.IsEnabled = true;
                 button.UpdateLayout();
             }
+            LabelStatus.Content = labelStatusStart + "File management appears to have completed.";
         }
 
         private string GetNewestBackupFolder(string backupPath, bool backedUpTheFiles)
@@ -385,6 +435,7 @@ namespace DRGSaveFileManager
         {
             try
             {
+                LabelStatus.Content = labelStatusStart + "Backing up files...";
                 string time = DateTime.Now.ToString(dateTimeFormat);
                 string steamBackupPath = backupPath.EndWithFolderSeparator() + time + "\\Steam";
                 System.IO.Directory.CreateDirectory(steamBackupPath);
@@ -402,8 +453,10 @@ namespace DRGSaveFileManager
                 }
             } catch
             {
+                LabelStatus.Content = "File backup failed!";
                 return false;
             }
+            LabelStatus.Content = labelStatusStart + "File backup succeeded.";
             return true;
         }
 
