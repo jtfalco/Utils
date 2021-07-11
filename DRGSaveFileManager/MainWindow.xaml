@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DRGSaveFileManager"
         mc:Ignorable="d"
-        Title="Deep Rock Galactic Save File Helper" Height="450" Width="1260" MinWidth="720" MinHeight="450">
+        Title="Deep Rock Galactic Save File Helper" Height="450" Width="1260" MinWidth="720" MinHeight="460">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0*"/>
@@ -18,6 +18,7 @@
         <Label x:Name="LabelWindowsAppStoreFolder" Content="Windows App Store Save Folder:" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="15,60,0,0" VerticalAlignment="Top"/>
         <Label x:Name="LabelBackupFolder" Content="Backup Save Folder:" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="15,120,0,0" VerticalAlignment="Top"/>
         <Label x:Name="LabelBehavior" Content="Expected Behavior:" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="15,170,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="LabelStatus" Content="Status: " Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="15,0,15,0" VerticalAlignment="Bottom"/>
         <RadioButton x:Name="RadioButtonBehavior1" Content="Copy Newer Save over Older Save" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="25,200,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
         <RadioButton x:Name="RadioButtonBehavior2" Content="Copy Older Save over Newer Save" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="25,220,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
         <RadioButton x:Name="RadioButtonBehavior3" Content="Copy Steam Save over Windows App Store Save" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="25,240,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
@@ -34,9 +35,9 @@
         <Button x:Name="ButtonRecommendWindowsAppStoreFolder" Content="Recommend" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="197,63,0,0" VerticalAlignment="Top"/>
         <Button x:Name="ButtonRecommendSteamFolder" Content="Recommend" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="126,3,0,0" VerticalAlignment="Top"/>
         <Button x:Name="ButtonRecommendBackupFolder" Content="Recommend" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="130,123,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="ButtonExecute" Content="Execute" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="0,380,10,0" VerticalAlignment="Top" IsEnabled="False"/>
+        <Button x:Name="ButtonExecute" Content="Execute" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="0,0,10,24" VerticalAlignment="Bottom" IsEnabled="False"/>
         <Rectangle x:Name="ValidationRectangleSteam" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Height="22" Margin="13,29,30,0" Stroke="Red" StrokeThickness="2" VerticalAlignment="Top" MinWidth="649"/>
         <Rectangle x:Name="ValidationRectangleWindowsAppStore" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Height="22" Margin="13,89,30,0" Stroke="Red" StrokeThickness="2" VerticalAlignment="Top" MinWidth="649"/>
-        <Rectangle x:Name="ValidationRectangleBackup" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Height="22" Margin="13,149,30,0" Stroke="Red" StrokeThickness="2" VerticalAlignment="Top" MinWidth="649"/>
+        <Rectangle x:Name="ValidationRectangleBackup" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Height="22" Margin="13,149,30,0" Stroke="Red" StrokeThickness="2" VerticalAlignment="Top" MinWidth="649"/>        
     </Grid>
 </Window>
