@@ -15,6 +15,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Ookii.Dialogs.Wpf;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace DRGSaveFileManager
 {
@@ -29,17 +30,21 @@ namespace DRGSaveFileManager
         private const string dateTimeFormat = "yyyy-MM-dd HHmmss";
         private readonly string configPath = System.Environment.CurrentDirectory + "\\application.config";
         private readonly CultureInfo culture = new CultureInfo("en-US");
+        private readonly string defaultBackupsFolderName = "DRGBackups";
         public MainWindow()
         {
             InitializeComponent();            
             ButtonPickSteamFolder.Click += ButtonPickSteamFolder_OnClick;
             ButtonPickWindowsAppStoreFolder.Click += ButtonPickWindowsAppStoreFolder_OnClick;
             ButtonPickBackupFolder.Click += ButtonPickBackupFolder_OnClick;
+            ButtonRecommendWindowsAppStoreFolder.Click += ButtonRecommendWindowsAppStoreFolder_OnClick;
+            ButtonRecommendSteamFolder.Click += ButtonRecommendSteamFolder_OnClick;
+            ButtonRecommendBackupFolder.Click += ButtonRecommendBackupFolder_Click;
             ButtonExecute.Click += ButtonExecute_OnClick;
             TextboxSteamFolder.TextChanged += TextboxSteamFolder_TextChanged;
             TextboxWindowsAppStoreFolder.TextChanged += TextboxWindowsAppStoreFolder_TextChanged;
             TextboxBackupFolder.TextChanged += TextboxBackupFolder_TextChanged;
-            folderButtons = new Button[3] { ButtonPickBackupFolder, ButtonPickSteamFolder, ButtonPickWindowsAppStoreFolder };
+            folderButtons = new Button[4] { ButtonPickBackupFolder, ButtonPickSteamFolder, ButtonPickWindowsAppStoreFolder, ButtonRecommendWindowsAppStoreFolder };
             radioButtons = new RadioButton[10] { 
                 RadioButtonBehavior1, RadioButtonBehavior2, RadioButtonBehavior3, RadioButtonBehavior4, RadioButtonBehavior5,
                 RadioButtonBehavior6, RadioButtonBehavior7, RadioButtonBehavior8, RadioButtonBehavior9, RadioButtonBehavior10
@@ -182,6 +187,94 @@ namespace DRGSaveFileManager
             }
         }
 
+        private void ButtonRecommendBackupFolder_Click(object sender, RoutedEventArgs e)
+        {
+            RecommendBackupFolderIntoTextbox();
+        }
+
+        private void ButtonRecommendSteamFolder_OnClick(object sender, RoutedEventArgs e)
+        {
+            RecommendSteamFolderIntoTextbox();
+        }
+
+        private void ButtonRecommendWindowsAppStoreFolder_OnClick(object sender, RoutedEventArgs e)
+        {
+            RecommendWindowsAppStoreFolderIntoTextbox();
+        }
+
+
+        private void RecommendBackupFolderIntoTextbox()
+        {
+            try
+            {
+                string recommendation = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments).EndWithFolderSeparator();
+                if (Directory.Exists(recommendation) && !Directory.Exists(recommendation + defaultBackupsFolderName))
+                {
+                    Directory.CreateDirectory(recommendation + defaultBackupsFolderName);
+                }
+                recommendation += defaultBackupsFolderName;
+                if (Directory.Exists(recommendation))
+                {
+                    TextboxBackupFolder.Text = recommendation;
+                    TextboxBackupFolder.UpdateLayout();
+                }
+            } catch (Exception)
+            {
+
+            }
+        }
+
+        private void RecommendSteamFolderIntoTextbox()
+        {
+            string recommendation = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Deep Rock Galactic\\FSD\\Saved\\SaveGames\\";            
+            if (!Directory.Exists(recommendation))
+            {
+                recommendation = recommendation.Replace("Program Files (x86)", "Program Files");
+            }
+            if(Directory.Exists(recommendation))
+            {
+                TextboxSteamFolder.Text = recommendation;
+                TextboxSteamFolder.UpdateLayout();
+            }
+        }
+
+        private void RecommendWindowsAppStoreFolderIntoTextbox() {
+            string appDataFolderString = Environment.GetEnvironmentVariable("LocalAppData").EndWithFolderSeparator();
+            //string appDataFolderString = "%LOCALAPPDATA%".EndWithFolderSeparator();
+            string packagesFolderString = appDataFolderString + "Packages";
+            string[] DRGAppDataFolderAmongThese = Directory.GetDirectories(packagesFolderString, "*CoffeeStainStudios.DeepRockGalactic*");
+            //DirectoryInfo packagesFolderDirectory = new DirectoryInfo(packagesFolderString);
+            //DirectoryInfo[] DRGAppDataFolderAmongThese = packagesFolderDirectory.GetDirectories("CoffeeStainStudios\\.DeepRockGalactic");
+            if(DRGAppDataFolderAmongThese.Length > 0) {
+                string[] SystemAppDataFolderAmongThese = Directory.GetDirectories(DRGAppDataFolderAmongThese[0].EndWithFolderSeparator(),"SystemAppData");
+                //DirectoryInfo[] SystemAppDataFolderAmongThese = DRGAppDataFolderAmongThese[0].GetDirectories("SystemAppData");
+                if(SystemAppDataFolderAmongThese.Length > 0) {
+                    string[] wgsFolderAmongThese = Directory.GetDirectories(SystemAppDataFolderAmongThese[0].EndWithFolderSeparator(),"wgs");
+                    //DirectoryInfo[] wgsFolderAmongThese = SystemAppDataFolderAmongThese[0].GetDirectories("wgs");
+                    if(wgsFolderAmongThese.Length > 0) {
+                        string[] hexMessOneAmongThese = Directory.GetDirectories(wgsFolderAmongThese[0].EndWithFolderSeparator(), "*_*");
+                        for(int i = 0; i < hexMessOneAmongThese.Length; i++)
+                        {
+                            DirectoryInfo checkThis = new DirectoryInfo(hexMessOneAmongThese[i]);
+                            if(Regex.IsMatch(checkThis.Name, "[a-fA-F0-9]{16}_[a-fA-F0-9]{32}"))
+                            {
+                                string[] hexMessTwoAmongThese = Directory.GetDirectories(hexMessOneAmongThese[i].EndWithFolderSeparator(), "*");
+                                for(int j = 0; j < hexMessTwoAmongThese.Length; j++)
+                                {
+                                    DirectoryInfo checkThisToo = new DirectoryInfo(hexMessTwoAmongThese[j]);
+                                    if(Regex.IsMatch(checkThisToo.Name, "[a-fA-F0-9]{32}"))
+                                    {
+                                        TextboxWindowsAppStoreFolder.Text = hexMessTwoAmongThese[j].EndWithFolderSeparator();
+                                        TextboxWindowsAppStoreFolder.UpdateLayout();
+                                    }
+                                }
+                            }
+                        }                        
+                    }
+                }
+            }
+        }
+
         private void TextboxSteamFolder_TextChanged(object sender, RoutedEventArgs e)
         {
             ValidateFolders();            
@@ -243,7 +336,7 @@ namespace DRGSaveFileManager
             } else if (RadioButtonBehavior8.IsChecked ?? false)
             {
                 var ookiiDialog = new VistaFolderBrowserDialog();                
-                ookiiDialog.SelectedPath = backupPath + "\\";
+                ookiiDialog.SelectedPath = backupPath.EndWithFolderSeparator();
                 if (ookiiDialog.ShowDialog() ?? false)
                 {
                     RunCopyBackupOverSave(steamPath, windowsAppStorePath, ookiiDialog.SelectedPath, true, true);
@@ -251,7 +344,7 @@ namespace DRGSaveFileManager
             } else if (RadioButtonBehavior9.IsChecked ?? false)
             {
                 var ookiiDialog = new VistaFolderBrowserDialog();
-                ookiiDialog.SelectedPath = backupPath + "\\";                
+                ookiiDialog.SelectedPath = backupPath.EndWithFolderSeparator();
                 if (ookiiDialog.ShowDialog() ?? false)
                 {
                     RunCopyBackupOverSave(steamPath, windowsAppStorePath, ookiiDialog.SelectedPath, true, false);
@@ -259,7 +352,7 @@ namespace DRGSaveFileManager
             } else if (RadioButtonBehavior10.IsChecked ?? false)
             {
                 var ookiiDialog = new VistaFolderBrowserDialog();
-                ookiiDialog.SelectedPath = backupPath + "\\";
+                ookiiDialog.SelectedPath = backupPath.EndWithFolderSeparator();
                 if (ookiiDialog.ShowDialog() ?? false)
                 {
                     RunCopyBackupOverSave(steamPath, windowsAppStorePath, ookiiDialog.SelectedPath, false, true);
@@ -293,19 +386,19 @@ namespace DRGSaveFileManager
             try
             {
                 string time = DateTime.Now.ToString(dateTimeFormat);
-                string steamBackupPath = backupPath + "\\" + time + "\\Steam";
+                string steamBackupPath = backupPath.EndWithFolderSeparator() + time + "\\Steam";
                 System.IO.Directory.CreateDirectory(steamBackupPath);
                 string[] steamFiles = System.IO.Directory.GetFiles(steamPath);
                 foreach (string file in steamFiles)
                 {
-                    System.IO.File.Copy(file, steamBackupPath + "\\" + System.IO.Path.GetFileName(file));
+                    System.IO.File.Copy(file, steamBackupPath.EndWithFolderSeparator() + System.IO.Path.GetFileName(file));
                 }
-                string windowsAppStoreBackupPath = backupPath + "\\" + time + "\\Windows App Store";
+                string windowsAppStoreBackupPath = backupPath.EndWithFolderSeparator() + time + "\\Windows App Store";
                 System.IO.Directory.CreateDirectory(windowsAppStoreBackupPath);
                 string[] windowsAppStoreFiles = System.IO.Directory.GetFiles(windowsAppStorePath);
                 foreach (string file in windowsAppStoreFiles)
                 {
-                    System.IO.File.Copy(file, windowsAppStoreBackupPath + "\\" + System.IO.Path.GetFileName(file));
+                    System.IO.File.Copy(file, windowsAppStoreBackupPath.EndWithFolderSeparator() + System.IO.Path.GetFileName(file));
                 }
             } catch
             {
@@ -443,7 +536,7 @@ namespace DRGSaveFileManager
                 }
                 if(string.IsNullOrWhiteSpace(newPath))
                 {
-                    newPath = steamPath + "\\" + System.IO.Path.GetFileName(sourcePath);
+                    newPath = steamPath.EndWithFolderSeparator() + System.IO.Path.GetFileName(sourcePath);
                 }
                 File.Copy(sourcePath, newPath);
             }
@@ -460,11 +553,19 @@ namespace DRGSaveFileManager
                     }
                 }
                 if(string.IsNullOrWhiteSpace(newPath))
-                {
-                    newPath = windowsAppStorePath + "\\" + System.IO.Path.GetFileName(sourcePath);
+                {                   
+                    newPath = windowsAppStorePath.EndWithFolderSeparator() + System.IO.Path.GetFileName(sourcePath);                    
                 }
                 File.Copy(sourcePath, newPath);
             }
+        }
+    }
+    
+
+    public static class StringExtensions 
+        {
+        public static string EndWithFolderSeparator(this string original, string separator = "\\") {
+            return original.EndsWith(separator) ? original : original + separator;
         }
     }
 }

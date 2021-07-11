@@ -5,35 +5,38 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DRGSaveFileManager"
         mc:Ignorable="d"
-        Title="Deep Rock Galactic Save File Helper" Height="450" Width="800">
+        Title="Deep Rock Galactic Save File Helper" Height="450" Width="1260" MinWidth="720" MinHeight="450">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0*"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <TextBox x:Name="TextboxSteamFolder" HorizontalAlignment="Left" Margin="30,31,0,0" Text="Select Steam Save Folder..." TextWrapping="Wrap" VerticalAlignment="Top" Width="645" IsEnabled="False" Grid.ColumnSpan="2" Height="18"/>
-        <TextBox x:Name="TextboxWindowsAppStoreFolder" HorizontalAlignment="Left" Margin="30,91,0,0" Text="Select Windows App Store Save Folder..." TextWrapping="Wrap" VerticalAlignment="Top" Width="645" IsEnabled="False" Grid.ColumnSpan="2" Height="18"/>
-        <TextBox x:Name="TextboxBackupFolder" HorizontalAlignment="Left" Margin="30,151,0,0" Text="Select Backup Save Folder..." TextWrapping="Wrap" VerticalAlignment="Top" Width="645" IsEnabled="False" Grid.ColumnSpan="2" Height="18"/>
-        <Label x:Name="LabelSteamFolder" Content="Steam Save Folder:" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="30,0,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="LabelWindowsAppStoreFolder" Content="Windows App Store Save Folder:" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="30,60,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="LabelBackupFolder" Content="Backup Save Folder:" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="30,120,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="LabelBehavior" Content="Expected Behavior:" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="30,170,0,0" VerticalAlignment="Top"/>
-        <RadioButton x:Name="RadioButtonBehavior1" Content="Copy Newer Save over Older Save" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="40,200,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
-        <RadioButton x:Name="RadioButtonBehavior2" Content="Copy Older Save over Newer Save" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="40,220,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
-        <RadioButton x:Name="RadioButtonBehavior3" Content="Copy Steam Save over Windows App Store Save" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="40,240,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
-        <RadioButton x:Name="RadioButtonBehavior4" Content="Copy Windows App Store Save over Steam Save" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="40,260,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
-        <RadioButton x:Name="RadioButtonBehavior5" Content="Copy Both Newest Backup Saves back to their folders" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="40,280,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
-        <RadioButton x:Name="RadioButtonBehavior6" Content="Copy Newest Steam Backup Save to its folder" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="40,300,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
-        <RadioButton x:Name="RadioButtonBehavior7" Content="Copy Newest Windows App Store Backup Save to its folder" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="40,320,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
-        <RadioButton x:Name="RadioButtonBehavior8" Content="Select a Backup Date + Time and Copy Both Backup Saves to their folders" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="40,340,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
-        <RadioButton x:Name="RadioButtonBehavior9" Content="Select a Backup Date + Time and Copy its Steam Backup Save to its folder" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="40,360,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
-        <RadioButton x:Name="RadioButtonBehavior10" Content="Select a Backup Date + Time and Copy its Windows App Store Backup Save to its folder" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="40,380,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
-        <Button x:Name="ButtonPickSteamFolder" Content="..." Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="680,31,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="ButtonPickWindowsAppStoreFolder" Content="..." Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="680,91,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="ButtonPickBackupFolder" Content="..." Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="680,151,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="ButtonExecute" Content="Execute" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="680,380,0,0" VerticalAlignment="Top" IsEnabled="False"/>
-        <Rectangle x:Name="ValidationRectangleSteam" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="22" Margin="28,29,0,0" Stroke="Red" StrokeThickness="2" VerticalAlignment="Top" Width="649"/>
-        <Rectangle x:Name="ValidationRectangleWindowsAppStore" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="22" Margin="28,89,0,0" Stroke="Red" StrokeThickness="2" VerticalAlignment="Top" Width="649"/>
-        <Rectangle x:Name="ValidationRectangleBackup" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="22" Margin="28,149,0,0" Stroke="Red" StrokeThickness="2" VerticalAlignment="Top" Width="649"/>
+        <TextBox x:Name="TextboxSteamFolder" HorizontalAlignment="Stretch" Margin="15,31,32,0" Text="Select Steam Save Folder..." TextWrapping="Wrap" VerticalAlignment="Top" MinWidth="645" IsEnabled="False" Grid.ColumnSpan="2" Height="18"/>
+        <TextBox x:Name="TextboxWindowsAppStoreFolder" HorizontalAlignment="Stretch" Margin="15,91,32,0" Text="Select Windows App Store Save Folder..." TextWrapping="Wrap" VerticalAlignment="Top" MinWidth="645" IsEnabled="False" Grid.ColumnSpan="2" Height="18"/>
+        <TextBox x:Name="TextboxBackupFolder" HorizontalAlignment="Stretch" Margin="15,151,32,0" Text="Select Backup Save Folder..." TextWrapping="Wrap" VerticalAlignment="Top" MinWidth="645" IsEnabled="False" Grid.ColumnSpan="2" Height="18"/>
+        <Label x:Name="LabelSteamFolder" Content="Steam Save Folder:" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="15,0,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="LabelWindowsAppStoreFolder" Content="Windows App Store Save Folder:" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="15,60,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="LabelBackupFolder" Content="Backup Save Folder:" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="15,120,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="LabelBehavior" Content="Expected Behavior:" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="15,170,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="RadioButtonBehavior1" Content="Copy Newer Save over Older Save" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="25,200,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
+        <RadioButton x:Name="RadioButtonBehavior2" Content="Copy Older Save over Newer Save" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="25,220,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
+        <RadioButton x:Name="RadioButtonBehavior3" Content="Copy Steam Save over Windows App Store Save" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="25,240,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
+        <RadioButton x:Name="RadioButtonBehavior4" Content="Copy Windows App Store Save over Steam Save" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="25,260,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
+        <RadioButton x:Name="RadioButtonBehavior5" Content="Copy Both Newest Backup Saves back to their folders" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="25,280,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
+        <RadioButton x:Name="RadioButtonBehavior6" Content="Copy Newest Steam Backup Save to its folder" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="25,300,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
+        <RadioButton x:Name="RadioButtonBehavior7" Content="Copy Newest Windows App Store Backup Save to its folder" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="25,320,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
+        <RadioButton x:Name="RadioButtonBehavior8" Content="Select a Backup Date + Time and Copy Both Backup Saves to their folders" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="25,340,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
+        <RadioButton x:Name="RadioButtonBehavior9" Content="Select a Backup Date + Time and Copy its Steam Backup Save to its folder" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="25,360,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
+        <RadioButton x:Name="RadioButtonBehavior10" Content="Select a Backup Date + Time and Copy its Windows App Store Backup Save to its folder" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="25,380,0,0" VerticalAlignment="Top" GroupName="IntendedBehavior"/>
+        <Button x:Name="ButtonPickSteamFolder" Content="..." Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="0,31,10,0" VerticalAlignment="Top"/>
+        <Button x:Name="ButtonPickWindowsAppStoreFolder" Content="..." Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="0,91,10,0" VerticalAlignment="Top"/>
+        <Button x:Name="ButtonPickBackupFolder" Content="..." Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="0,151,10,0" VerticalAlignment="Top"/>
+        <Button x:Name="ButtonRecommendWindowsAppStoreFolder" Content="Recommend" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="197,63,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="ButtonRecommendSteamFolder" Content="Recommend" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="126,3,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="ButtonRecommendBackupFolder" Content="Recommend" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="130,123,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="ButtonExecute" Content="Execute" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="0,380,10,0" VerticalAlignment="Top" IsEnabled="False"/>
+        <Rectangle x:Name="ValidationRectangleSteam" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Height="22" Margin="13,29,30,0" Stroke="Red" StrokeThickness="2" VerticalAlignment="Top" MinWidth="649"/>
+        <Rectangle x:Name="ValidationRectangleWindowsAppStore" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Height="22" Margin="13,89,30,0" Stroke="Red" StrokeThickness="2" VerticalAlignment="Top" MinWidth="649"/>
+        <Rectangle x:Name="ValidationRectangleBackup" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Height="22" Margin="13,149,30,0" Stroke="Red" StrokeThickness="2" VerticalAlignment="Top" MinWidth="649"/>
     </Grid>
 </Window>
